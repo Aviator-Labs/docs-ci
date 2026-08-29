@@ -2,10 +2,10 @@
 title: Manual Approval Step
 ---
 
-This is an example of a [`task` step](../../tasks.md) you can add to your [Jobs](../../jobs.md) that requires a human to
+This is an example of a [`task` step](../../docs/tasks.md) you can add to your [Jobs](../../docs/jobs.md) that requires a human to
 approve or reject the job from running. This is probably the most minimal version of a manual approval step you can have
 in Concourse that doesn't require pulling in a bunch of other tech into your stack. It's definitely not the best UX
-since you need to use the [`fly` CLI](../../fly.md) to approve the step.
+since you need to use the [`fly` CLI](../../docs/fly.md) to approve the step.
 
 Task configuration, `config.yml`:
 

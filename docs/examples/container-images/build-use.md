@@ -2,7 +2,7 @@
 title: Building an Image and Using it in a Task
 ---
 
-This guide will show you how to build and use an image within one [job](../../jobs.md) without pushing the image to an
+This guide will show you how to build and use an image within one [job](../../docs/jobs.md) without pushing the image to an
 external image registry like Docker Hub.
 
 ## Build The Image
@@ -28,7 +28,7 @@ The above pipeline will build a container image and also output it in Concourse'
 ## Use the Image
 
 Next we want to add a second task to this job which will use the image generated from the first task as its container
-image. To use the image from the previous step add the top-level `image` key to the [`task` step](../../steps/task.md).
+image. To use the image from the previous step add the top-level `image` key to the [`task` step](../../docs/steps/task.md).
 
 [//]: # (@formatter:off)
 ```yaml linenums="1" title="build-push.yml"

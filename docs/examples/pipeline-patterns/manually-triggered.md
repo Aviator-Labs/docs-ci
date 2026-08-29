@@ -23,7 +23,7 @@ A job can be triggered by a resource. After it's complete, the next job can run 
 
 ## References
 
-* [Resources](../docs/resources/index.md)
-* [Jobs](../docs/jobs.md)
-* [Steps](../docs/steps/index.md)
-* [Tasks](../docs/tasks.md)
+* [Resources](../../docs/resources/index.md)
+* [Jobs](../../docs/jobs.md)
+* [Steps](../../docs/steps/index.md)
+* [Tasks](../../docs/tasks.md)

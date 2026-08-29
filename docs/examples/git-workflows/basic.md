@@ -11,7 +11,7 @@ in the tarball on the [GitHub release
 page](https://github.com/concourse/concourse/releases). It is not the only
 resource available for working with git-related resources. If you don't see
 your use-case on this page then there is probably another resource that you can
-use. Check out the [Resource Types](../../../resource-types-list.md) page for
+use. Check out the [Resource Types](../../resource-types-list.md) page for
 other Git-related resources.
 
 Check out the

@@ -23,6 +23,6 @@ You can run the tests for a Java application.
 
 ## References
 
-* [Jobs](../docs/jobs.md)
-* [Steps](../docs/steps/index.md)
-* [Tasks](../docs/tasks.md)
+* [Jobs](../../docs/jobs.md)
+* [Steps](../../docs/steps/index.md)
+* [Tasks](../../docs/tasks.md)

@@ -27,7 +27,7 @@ The [`git` resource](https://github.com/concourse/git-resource) can be used to t
 
 ## References
 
-* [Resources](../docs/resources/index.md)
-* [Jobs](../docs/jobs.md)
-* [Steps](../docs/steps/index.md)
-* [Tasks](../docs/tasks.md)
+* [Resources](../../docs/resources/index.md)
+* [Jobs](../../docs/jobs.md)
+* [Steps](../../docs/steps/index.md)
+* [Tasks](../../docs/tasks.md)

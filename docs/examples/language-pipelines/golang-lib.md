@@ -16,12 +16,12 @@ You can run the tests for a Golang library across any specified versions.
 </div>
 
 This example shows how to have multiple versions of a language, environment, or dependency fetched and integrated in to
-a [Pipeline](../docs/pipelines/index.md).
+a [Pipeline](../../docs/pipelines/index.md).
 
-For these Docker images, defining them as [Resources](../docs/resources/index.md) has two advantages for
+For these Docker images, defining them as [Resources](../../docs/resources/index.md) has two advantages for
 this use case. First, this enables the pipeline to be triggered when there are new versions of those images available.
-Second, referencing them in the task's [`task` step **`image`**](../docs/steps/task.md) param is helpful as it will 
-ensure consistency between the image versions fetched by the [Resource](../docs/resources/index.md) and the image 
+Second, referencing them in the task's [`task` step **`image`**](../../docs/steps/task.md) param is helpful as it will 
+ensure consistency between the image versions fetched by the [Resource](../../docs/resources/index.md) and the image 
 version running in the job.
 
 ## Pipeline Configuration
@@ -32,6 +32,6 @@ version running in the job.
 
 ## References
 
-* [Jobs](../docs/jobs.md)
-* [Steps](../docs/steps/index.md)
-* [Tasks](../docs/tasks.md)
+* [Jobs](../../docs/jobs.md)
+* [Steps](../../docs/steps/index.md)
+* [Tasks](../../docs/tasks.md)

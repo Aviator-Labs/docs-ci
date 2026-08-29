@@ -22,8 +22,8 @@ While you are free to create as many jobs as you'd like for your pipeline, you h
 inbetween them.
 
 These constructs give you the ability to design a pipeline that can process artifacts in many different ways
-via [Tasks](../docs/tasks.md), and then store those processed artifacts externally
-via [Resources](../docs/resources/index.md).
+via [Tasks](../../docs/tasks.md), and then store those processed artifacts externally
+via [Resources](../../docs/resources/index.md).
 
 ## Pipeline Configuration
 
@@ -33,7 +33,7 @@ via [Resources](../docs/resources/index.md).
 
 ## References
 
-* [`task-config.outputs`](../docs/tasks.md#output-schema)
-* [Jobs](../docs/jobs.md)
-* [Steps](../docs/steps/index.md)
-* [Tasks](../docs/tasks.md)
+* [`task-config.outputs`](../../docs/tasks.md#task-config-schema)
+* [Jobs](../../docs/jobs.md)
+* [Steps](../../docs/steps/index.md)
+* [Tasks](../../docs/tasks.md)

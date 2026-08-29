@@ -7,13 +7,13 @@ you through a few example pipelines to show you how inputs and outputs work with
 you should understand how inputs and outputs work within the context of a single job.
 
 To run the pipelines in the following examples yourself you can get your own Concourse running locally by following
-the [Quick Start](../../getting-started/quick-start.md) guide. Then use [
-`fly set-pipeline`](../../pipelines/setting-pipelines.md#fly-set-pipeline) to see the pipelines in action.
+the [Quick Start](../../docs/getting-started/quick-start.md) guide. Then use [
+`fly set-pipeline`](../../docs/pipelines/setting-pipelines.md#fly-set-pipeline) to see the pipelines in action.
 
 ## 1) - Passing Inputs Between Tasks
 
-This pipeline will show us how to create outputs and pass outputs as inputs to the next [step](../../steps/index.md) in
-a [job plan](../../jobs.md).
+This pipeline will show us how to create outputs and pass outputs as inputs to the next [step](../../docs/steps/index.md) in
+a [job plan](../../docs/jobs.md).
 
 This pipeline has two tasks. The first task outputs a file with the date. The second task reads and prints the contents
 of the file from the first task.
@@ -80,8 +80,8 @@ fly -t tutorial trigger-job --job passing-artifacts/the-job --watch
 This scenario is to satisfy the curiosity cat inside all of us. Never do this in real life because you're definitely
 going to hurt yourself!
 
-There are two [Jobs](../../jobs.md) in this pipeline. The first job, `writing-in-parallel`, has
-two [Steps](../../steps/index.md); both steps will produce an artifact named `the-output` in parallel. If you run the
+There are two [Jobs](../../docs/jobs.md) in this pipeline. The first job, `writing-in-parallel`, has
+two [Steps](../../docs/steps/index.md); both steps will produce an artifact named `the-output` in parallel. If you run the
 `writing-to-the-same-output-in-parallel` job multiple times you'll see the file in `the-output` folder changes depending
 on which of the parallel tasks finished last. Here's a visualization of the first job.
 
@@ -206,7 +206,7 @@ fly -t tutorial trigger-job --job parallel-artifacts/writing-to-the-same-output-
 
 ## 3) - Mapping the Names of Inputs and Outputs
 
-Sometimes the names of inputs and outputs don't match between multiple [task configs](../../steps/task.md), or they do
+Sometimes the names of inputs and outputs don't match between multiple [task configs](../../docs/steps/task.md), or they do
 match, and you don't want them overwriting each other, like in the previous example. That's when `input_mapping` and
 `output_mapping` become helpful. Both of these features rename the inputs/outputs in the task's config to some other
 name in the job plan.
@@ -222,7 +222,7 @@ The third task reads and prints the contents of the file under another name, `ge
 in the job plan is mapped to `generic-input`.
 
 The fourth task tries to use the artifact named `the-output` as its input. This task fails to even start because there
-was no artifact with the name `the-output` available in the [job plan](../../jobs.md#job-schema); it was remapped to
+was no artifact with the name `the-output` available in the [job plan](../../docs/jobs.md#job-schema); it was remapped to
 `demo-disk`.
 
 Here's a visualization of the job.
@@ -485,8 +485,8 @@ fly -t tutorial trigger-job --job multiple-artifacts/multiple-outputs --watch
 
 ## 6) - Get Steps Generate Artifacts
 
-The majority of Concourse pipelines have at least one [resource](../../resources/index.md), which means they have at
-least one [`get` step](../../steps/get.md). Using a [`get` step](../../steps/get.md) in a job makes an artifact with the
+The majority of Concourse pipelines have at least one [resource](../../docs/resources/index.md), which means they have at
+least one [`get` step](../../docs/steps/get.md). Using a [`get` step](../../docs/steps/get.md) in a job makes an artifact with the
 name of the get step available for later steps in the job plan to consume as inputs.
 
 Here's a visualization of the job.

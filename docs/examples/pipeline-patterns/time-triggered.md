@@ -25,7 +25,7 @@ The [`time` resource](https://github.com/concourse/time-resource) can be used to
 
 ## References
 
-* [Resources](../docs/resources/index.md)
-* [Jobs](../docs/jobs.md)
-* [Steps](../docs/steps/index.md)
-* [Tasks](../docs/tasks.md)
+* [Resources](../../docs/resources/index.md)
+* [Jobs](../../docs/jobs.md)
+* [Steps](../../docs/steps/index.md)
+* [Tasks](../../docs/tasks.md)

@@ -12,20 +12,20 @@ the feature branch. To model this in Concourse, you'll need to have a pipeline
 for each active feature branch. Manually setting (and eventually archiving) a
 pipeline for each feature branch would be quite a burden. For this type of
 workflow, Concourse has a few important tools to help you out: the
-[`set_pipeline` step](../../steps/set-pipeline.md), [
-`across`](../../steps/modifier-and-hooks/across.md), and [instance
-pipelines](../../pipelines/grouping-pipelines.md).
+[`set_pipeline` step](../../docs/steps/set-pipeline.md), [
+`across`](../../docs/steps/modifier-and-hooks/across.md), and [instance
+pipelines](../../docs/pipelines/grouping-pipelines.md).
 
 In this guide, we'll cover:
 
-1. Writing a pipeline to [Test and Build](#test-build-deploy) a feature branch.
-1. Automatically creating pipelines for each feature branch from a "parent"
+1. Writing a pipeline to Test and Build a feature branch.
+2. Automatically creating pipelines for each feature branch from a "parent"
    pipeline. We'll use the [git
    resource](https://github.com/concourse/git-resource/), [`set_pipeline`
-   step](../../steps/set-pipeline.md), and [`across`
-   step](../../steps/modifier-and-hooks/across.md) to create instance
+   step](../../docs/steps/set-pipeline.md), and [`across`
+   step](../../docs/steps/modifier-and-hooks/across.md) to create instance
    pipelines.
-1. Cleaning up pipelines once feature branches are merged and deleted.
+3. Cleaning up pipelines once feature branches are merged and deleted.
 
 We'll use [this example Go
 app](https://github.com/concourse/examples/tree/main/apps/golang) for testing
@@ -40,7 +40,7 @@ single feature branch. We only need two resources in our pipeline:
 1. A `git` resource that will track and fetch commits from our feature branch.
    The `((branch))` is how we'll tell the pipeline which feature branch to
    track.
-1. A `registry-image` resource that will pull the [golang
+2. A `registry-image` resource that will pull the [golang
    image](https://hub.docker.com/_/golang) to test and build our example app.
 
 We'll then have two jobs:
@@ -49,7 +49,7 @@ We'll then have two jobs:
     ```yaml linenums="1" title="go-test.yml"
     --8<-- "libs/examples/tasks/go-test.yml"
     ```
-1. The second job will compile and run the binary using these two task files.
+2. The second job will compile and run the binary using these two task files.
    The first runs `go build` and tars up the final binary into a `.tgz` file.
    Both the binary and the tgz are saved in the output directory `binary`.
     ```yaml linenums="1" title="go-build.yml"

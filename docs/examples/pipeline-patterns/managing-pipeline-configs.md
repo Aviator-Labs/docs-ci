@@ -29,9 +29,9 @@ Then store your pipeline YAML files in that directory. Again, there's no "specia
 store your pipeline YAML files. Do whatever makes sense to you!
 
 To automatically update your pipeline in Concourse with what's stored in your Git repository, use the [
-`set_pipeline` step](../../steps/set-pipeline.md) in a job. You can view an example of a pipeline updating
-itself [in the examples section](../../../examples/set-pipeline.md). There are also examples on the [
-`set_pipeline` step](../../steps/set-pipeline.md) page.
+`set_pipeline` step](../../docs/steps/set-pipeline.md) in a job. You can view an example of a pipeline updating
+itself [in the examples section](../fundamentals/set-pipeline.md). There are also examples on the [
+`set_pipeline` step](../../docs/steps/set-pipeline.md) page.
 
 ## 2) In a Different Git Repository
 
@@ -45,20 +45,20 @@ the [resource type repositories](https://github.com/concourse/?q=resource).
 
 !!! tip
 
-    The following is also described on the [`set_pipeline` step](../../steps/set-pipeline.md) page.
+    The following is also described on the [`set_pipeline` step](../../docs/steps/set-pipeline.md) page.
 
 If you are setting multiple pipelines, or multiple instances of the same pipeline, it can be helpful to manage them from
 one place. Concourse allows you to use the `set_pipeline` step to create other pipelines.
-The [set_pipeline step](../../steps/set-pipeline.md) is not limited to updating the current pipeline.
+The [set_pipeline step](../../docs/steps/set-pipeline.md) is not limited to updating the current pipeline.
 
 When you use one pipeline to create other pipelines, this creates a parent-child relationship that Concourse tracks. You
-can see an example of this [here in `set-pipelines.yml`](../../../examples/set-pipeline.md).
+can see an example of this [here in `set-pipelines.yml`](../fundamentals/set-pipeline.md).
 
 As long as the parent pipeline continues to set/update the child pipeline(s), the child pipeline(s) will remain active.
 If the parent pipeline stops updating the child pipeline(s) (e.g. you updated the parent pipeline to not set/update the
 child pipeline(s) anymore), Concourse
-will [archive the pipeline](../../pipelines/managing-pipelines.md#fly-archive-pipeline). This pauses the child pipeline(
+will [archive the pipeline](../../docs/pipelines/managing-pipelines.md#fly-archive-pipeline). This pauses the child pipeline(
 s) and hides them from the web UI. The child pipeline configuration is deleted, but its build logs are retained.
 
 If you want to fully delete a pipeline, use [
-`fly destroy-pipeline`](../../pipelines/managing-pipelines.md#fly-destroy-pipeline).
+`fly destroy-pipeline`](../../docs/pipelines/managing-pipelines.md#fly-destroy-pipeline).

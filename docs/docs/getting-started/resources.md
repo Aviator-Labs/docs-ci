@@ -562,10 +562,10 @@ at [this page](../../resource-types-list.md).
 This brings us to the end of the tutorial. You should have a basic understanding about how to read Concourse pipelines
 and start creating your own. Here are some other parts of the site to help you take off with Concourse:
 
-* [How-To Guides](../how-to/index.md) - Contains practical guides
-  for [working with pipelines](../how-to/pipeline-guides/common-pipeline.md) and examples of common pipeline workflows,
-  such as [git](../how-to/git-guides/basic.md)
-  and [container](../how-to/container-image-guides/build-push.md) workflows.
+* [How-To Guides](../../examples/index.md) - Contains practical guides
+  for [working with pipelines](../../examples/pipeline-patterns/common-pipeline.md) and examples of common pipeline workflows,
+  such as [git](../../examples/git-workflows/basic.md)
+  and [container](../../examples/container-images/build-push.md) workflows.
 * Check out all the reference documentation:
     * [Jobs](../jobs.md)
     * [Tasks](../tasks.md)

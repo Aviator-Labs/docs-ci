@@ -23,6 +23,6 @@ You can set a static set of pipelines from another pipeline on the same team.
 
 ## References
 
-* [Jobs](../docs/jobs.md)
-* [Steps](../docs/steps/index.md)
-* [`set-pipeline` step](../docs/steps/set-pipeline.md)
+* [Jobs](../../docs/jobs.md)
+* [Steps](../../docs/steps/index.md)
+* [`set-pipeline` step](../../docs/steps/set-pipeline.md)

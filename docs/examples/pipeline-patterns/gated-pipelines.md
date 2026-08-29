@@ -11,12 +11,12 @@ trigger of such step.
 
 ## 1) - A Simple Gated Pipeline
 
-By default, all [Jobs](../../jobs.md) only run when manually triggered. That means a user has to run [
-`fly trigger-job`](../../jobs.md#fly-trigger-job) or click the plus button in the web interface for a job to run. A job
+By default, all [Jobs](../../docs/jobs.md) only run when manually triggered. That means a user has to run [
+`fly trigger-job`](../../docs/jobs.md#fly-trigger-job) or click the plus button in the web interface for a job to run. A job
 only runs automatically if one of its resources has the `trigger: true` parameter set.
 
 Therefore, in order to create a gated job in a pipeline you simply need to create a job that can only be manually
-triggered. That means not setting `trigger: true` for any of the jobs' [`get` steps](../../steps/get.md).
+triggered. That means not setting `trigger: true` for any of the jobs' [`get` steps](../../docs/steps/get.md).
 
 ```yaml
 jobs:

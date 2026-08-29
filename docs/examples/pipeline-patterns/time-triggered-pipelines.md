@@ -3,7 +3,7 @@ title: Time Triggered Pipeline Patterns
 ---
 
 The [time resource](https://github.com/concourse/time-resource/) produces a
-new [version](../../getting-started/resources.md#versions) for the time interval that was declared in its definition in
+new [version](../../docs/getting-started/resources.md#versions) for the time interval that was declared in its definition in
 the pipeline configuration file.
 
 The two most common usages are having the time resource trigger on an interval:

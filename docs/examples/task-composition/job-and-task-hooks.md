@@ -6,8 +6,8 @@ hide:
   - toc
 ---
 
-Job hooks like [`job.on_success`](../docs/jobs.md#job-schema) and Step hooks like [
-`on_success`](../docs/steps/modifier-and-hooks/on-success.md) are available to perform actions based on
+Job hooks like [`job.on_success`](../../docs/jobs.md#job-schema) and Step hooks like [
+`on_success`](../../docs/steps/modifier-and-hooks/on-success.md) are available to perform actions based on
 the success, failure, or abortion of a job.
 
 <div>
@@ -25,12 +25,12 @@ the success, failure, or abortion of a job.
 
 ## References
 
-* [`job.on_success`](../docs/jobs.md#job-schema)
-* [`job.on_failure`](../docs/jobs.md#job-schema)
-* [`job.on_abort`](../docs/jobs.md#job-schema)
-* [`on_success`](../docs/steps/modifier-and-hooks/on-success.md)
-* [`on_failure`](../docs/steps/modifier-and-hooks/on-failure.md)
-* [`on_abort`](../docs/steps/modifier-and-hooks/on-abort.md)
-* [Jobs](../docs/jobs.md)
-* [Steps](../docs/steps/index.md)
-* [Tasks](../docs/tasks.md)
+* [`job.on_success`](../../docs/jobs.md#job-schema)
+* [`job.on_failure`](../../docs/jobs.md#job-schema)
+* [`job.on_abort`](../../docs/jobs.md#job-schema)
+* [`on_success`](../../docs/steps/modifier-and-hooks/on-success.md)
+* [`on_failure`](../../docs/steps/modifier-and-hooks/on-failure.md)
+* [`on_abort`](../../docs/steps/modifier-and-hooks/on-abort.md)
+* [Jobs](../../docs/jobs.md)
+* [Steps](../../docs/steps/index.md)
+* [Tasks](../../docs/tasks.md)

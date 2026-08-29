@@ -32,11 +32,11 @@ The `stanger` text file:
 
 ## Defining Pipeline Resources
 
-Now we can start building out our pipeline. Let's declare our [Resources](../../resources/index.md) first. We will need
+Now we can start building out our pipeline. Let's declare our [Resources](../../docs/resources/index.md) first. We will need
 one resource to pull in the repo where our Dockerfile is located, and a second resource pointing to where we want to
 push the built container image to.
 
-There are some [Variables](../../../examples/pipeline-vars.md#variables) in this file that we will fill out when setting
+There are some [Variables](../pipeline-patterns/pipeline-vars.md#variables) in this file that we will fill out when setting
 the pipeline.
 
 ```yaml linenums="1" title="build-push.yml"
@@ -45,7 +45,7 @@ the pipeline.
 
 ## Create the Job
 
-Next we will create a [job](../../jobs.md) that will build and push our container image.
+Next we will create a [job](../../docs/jobs.md) that will build and push our container image.
 
 To build the job we will need to pull in the repo where the `Dockerfile` is.
 
@@ -62,7 +62,7 @@ resources: ... # omitting resource section from above
 The second step in our job will build the container image.
 
 To build the container image we are going to use the [oci-build-task](https://github.com/concourse/oci-build-task). The
-oci-build-task is a container image that is meant to be used in a Concourse [task](../../tasks.md) to build other
+oci-build-task is a container image that is meant to be used in a Concourse [task](../../docs/tasks.md) to build other
 container images. Check out the [`README.md`](https://github.com/concourse/oci-build-task/blob/master/README.md) in the
 repo for more details on how to configure and use the oci-build-task in more complex build scenarios.
 
@@ -75,8 +75,8 @@ resources: ... # omitting resource section from above
 [//]: # (@formatter:on)
 
 Next we will add [concourse-examples](https://github.com/concourse/examples) as an [
-`input`](../../tasks.md#task-config-schema) to the build task to ensure the artifact from the [
-`get` step](../../steps/get.md) (where our `Dockerfile` is fetched) is mounted in our `build-image` step.
+`input`](../../docs/tasks.md#task-config-schema) to the build task to ensure the artifact from the [
+`get` step](../../docs/steps/get.md) (where our `Dockerfile` is fetched) is mounted in our `build-image` step.
 
 [//]: # (@formatter:off)
 ```yaml linenums="1" title="build-push.yml"
@@ -115,11 +115,11 @@ resources: ... # omitting resource section from above
 
 ## Publish the Container Image
 
-To push the container image add a [`put` step](../../steps/put.md) to our job plan and tell the registry-image resource
+To push the container image add a [`put` step](../../docs/steps/put.md) to our job plan and tell the registry-image resource
 where the tarball of the container image is.
 
 The `put` step will push the container image using the information defined previously in the
-resource's [source](../../resources/index.md#resource-schema).
+resource's [source](../../docs/resources/index.md#resource-schema).
 
 [//]: # (@formatter:off)
 ```yaml linenums="1" title="build-push.yml"
