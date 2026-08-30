@@ -34,12 +34,13 @@ in your AWS Account:
 Next you will need
 to [create an IAM-Role that can be assumed using your JWT](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-idp_oidc.html#idp_oidc_Create).
 
-First, create a policy document that has allows for the Provider to call `sts:AssumeRoleWithWebIdentity`.
+1. Create a policy document that has allows for the Provider to call `sts:AssumeRoleWithWebIdentity`
+2. Add a condition on the sub-claim with type `StringEquals` and value `main/deploy-to-aws`
+3. Add a condition on the audience with type `StringEquals` and value `sts.amazonaws.com`
 
-Add a condition on the sub-claim with type `StringEquals` and value `main/deploy-to-aws`. This will allow ONLY that
-specific pipeline (and any instanced versions of it) to assume that IAM Role using a JWT.
+!!! info
 
-Add a second condition on the audience with type `StringEquals` and value `sts.amazonaws.com`.
+    This will allow ONLY that specific pipeline (and any instanced versions of it) to assume that IAM Role using a JWT.
 
 ```hcl linenums="36"
 --8<-- "examples/credentials/assets/idtoken-aws-source.tf:37:73"
@@ -54,6 +55,7 @@ Now, assign the assumed role a policy that the Pipeline can use.
 ```
 
 ## Use within the Pipeline
+
 Now you can use
 the [AWS AssumeRoleWithWebIdentity API operation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRoleWithWebIdentity.html)
 to assume your role via a JWT issued by Concourse.
