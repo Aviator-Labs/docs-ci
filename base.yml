@@ -241,21 +241,21 @@ nav:
           - examples/fundamentals/set-pipeline.md
       - Pipeline Patterns:
           - examples/pipeline-patterns/index.md
+          - examples/pipeline-patterns/common-pipeline.md
+          - examples/pipeline-patterns/managing-pipeline-configs.md
+          - examples/pipeline-patterns/task-inputs-outputs.md
+          - examples/pipeline-patterns/gated-pipelines.md
+          - examples/pipeline-patterns/manual-approval.md
           - examples/pipeline-patterns/time-triggered.md
           - examples/pipeline-patterns/serial-job.md
           - examples/pipeline-patterns/pipeline-vars.md
           - examples/pipeline-patterns/manually-triggered.md
-          - examples/pipeline-patterns/managing-pipeline-configs.md
-          - examples/pipeline-patterns/common-pipeline.md
-          - examples/pipeline-patterns/task-inputs-outputs.md
-          - examples/pipeline-patterns/gated-pipelines.md
-          - examples/pipeline-patterns/manual-approval.md
       - Git Workflows:
           - examples/git-workflows/index.md
-          - examples/git-workflows/git-triggered.md
           - examples/git-workflows/basic.md
           - examples/git-workflows/multi-branch.md
           - examples/git-workflows/monorepo.md
+          - examples/git-workflows/git-triggered.md
       - Container Images:
           - examples/container-images/index.md
           - examples/container-images/build-push.md

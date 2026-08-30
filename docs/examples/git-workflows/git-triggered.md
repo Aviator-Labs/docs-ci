@@ -1,12 +1,12 @@
 ---
-title: git-triggered job example
+title: Git Triggered Job
 search:
   exclude: true
 hide:
   - toc
 ---
 
-# `git`-triggered job example
+# Git Triggered Job 
 
 The [`git` resource](https://github.com/concourse/git-resource) can be used to trigger a job.
 
@@ -18,8 +18,6 @@ The [`git` resource](https://github.com/concourse/git-resource) can be used to t
 </div>
 
 ## Pipeline Configuration
-
-
 
 ```yaml linenums="1"
 --8<-- "libs/examples/pipelines/git-triggered.yml"
