@@ -179,3 +179,4 @@ For end-to-end setup with a specific provider, see:
 - [Authenticating to Vault via IDToken](../../../examples/credentials/idtoken-vault.md)
 - [Authenticating to AWS via IDToken](../../../examples/credentials/idtoken-aws.md)
 - [Authenticating to Azure via IDToken](../../../examples/credentials/idtoken-azure.md)
+- [Authenticating to GCP via IDToken](../../../examples/credentials/idtoken-gcp.md)
