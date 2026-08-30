@@ -249,7 +249,6 @@ nav:
           - examples/pipeline-patterns/common-pipeline.md
           - examples/pipeline-patterns/task-inputs-outputs.md
           - examples/pipeline-patterns/gated-pipelines.md
-          - examples/pipeline-patterns/time-triggered-pipelines.md
           - examples/pipeline-patterns/manual-approval.md
       - Git Workflows:
           - examples/git-workflows/index.md
