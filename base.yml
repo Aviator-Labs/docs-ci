@@ -276,6 +276,7 @@ nav:
           - examples/credentials/idtoken-vault.md
           - examples/credentials/idtoken-aws.md
           - examples/credentials/idtoken-azure.md
+          - examples/credentials/idtoken-gcp.md
       - Templating:
           - examples/templating/index.md
           - examples/templating/ytt-single-pipeline.md

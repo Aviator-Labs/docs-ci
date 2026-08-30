@@ -14,7 +14,8 @@ vault auth enable jwt
 ```
 
 Now configure the JWT auth method to accept JWTs issued by your Concourse (use your `--oidc-issuer-url` if configured,
-otherwise your external URL - see [Configuring a Separate OIDC Issuer](#configuring-a-separate-oidc-issuer)):
+otherwise your external URL -
+see [Configuring a Separate OIDC Issuer](../../docs/operation/creds/id-token.md#configuring-a-separate-oidc-issuer)):
 
 ```shell
 vault write auth/jwt/config \

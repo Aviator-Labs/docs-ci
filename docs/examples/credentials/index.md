@@ -1,8 +1,8 @@
 ---
 title: Credentials & Identity Federation
-hide:
-  - toc
 ---
+
+# Credentials & Identity Federation
 
 Guides for authenticating pipelines to external services using
 Concourse-issued JWTs (the [`idtoken` var source](../../docs/operation/creds/id-token.md))
@@ -37,6 +37,15 @@ Vault, AWS Secrets Manager, and other cluster-wide credential managers — see
     Log in to Azure from a pipeline using a federated credential.
 
     [:octicons-arrow-right-24: View guide](idtoken-azure.md)
+
+-   :material-google-cloud:{ .lg .middle } __Authenticating to GCP via IDToken__
+
+    ---
+
+    Impersonate a GCP service account from a pipeline using workload
+    identity federation.
+
+    [:octicons-arrow-right-24: View guide](idtoken-gcp.md)
 
 </div>
 

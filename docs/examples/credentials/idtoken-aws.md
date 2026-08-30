@@ -18,12 +18,13 @@ to [create an OpenID Connect identity provider](https://docs.aws.amazon.com/IAM/
 in your AWS Account:
 
 1. Set `url` to the external URL of your Concourse server (or the `--oidc-issuer-url` if you're using a separate OIDC
-   issuer - see [Configuring a Separate OIDC Issuer](#configuring-a-separate-oidc-issuer)).
+   issuer -
+   see [Configuring a Separate OIDC Issuer](../../docs/operation/creds/id-token.md#configuring-a-separate-oidc-issuer)).
 2. For `client_id_list`, you can choose any string you like, but using a value like `sts.amazonaws.com` is recommended.
 
 !!! note
 
-    You have to use the same string later in the configuration of your [`idtoken` var source](../../vars.md#id-token).
+    You have to use the same string later in the configuration of your [`idtoken` var source](../../docs/vars.md#id-token).
 
 ```hcl linenums="1"
 --8<-- "examples/credentials/assets/idtoken-aws-source.tf::35"

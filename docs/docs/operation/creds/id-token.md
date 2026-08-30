@@ -176,6 +176,6 @@ while keeping your Concourse instance private.
 
 For end-to-end setup with a specific provider, see:
 
-- [Authenticating to Vault via IDToken](../../../examples/credentials/idtoken-vault)
-- [Authenticating to AWS via IDToken](../../../examples/credentials/idtoken-aws)
-- [Authenticating to Azure via IDToken](../../../examples/credentials/idtoken-azure)
+- [Authenticating to Vault via IDToken](../../../examples/credentials/idtoken-vault.md)
+- [Authenticating to AWS via IDToken](../../../examples/credentials/idtoken-aws.md)
+- [Authenticating to Azure via IDToken](../../../examples/credentials/idtoken-azure.md)

@@ -11,7 +11,7 @@ terraform {
   }
 }
 
-variable "concourse_url" {
+variable "aws_concourse_url" {
   description = "Concourse URL"
   type        = string
 
@@ -19,11 +19,11 @@ variable "concourse_url" {
 }
 
 data "tls_certificate" "root_certificate" {
-  url = var.concourse_url
+  url = var.aws_concourse_url
 }
 
 resource "aws_iam_openid_connect_provider" "oidc_provider" {
-  url = var.concourse_url
+  url = var.aws_concourse_url
 
   client_id_list = [
     "sts.amazonaws.com"
