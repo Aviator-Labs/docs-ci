@@ -1,49 +1,92 @@
 ---
-title: Templating - Single File
+title: Templating a Single Pipeline
 ---
 
-`ytt` has a concept of data values that, on a simple level, can act like [Static Vars](../../docs/vars.md#static-vars).
+The smallest ytt setup: one template file describing the shape of a pipeline, and one data values file supplying
+the parts that change. Render them together, and you get a plain pipeline YAML file, ready for `fly set-pipeline`.
 
-In the below example, we are templating a simple pipeline that just prints out "hello world of vars!". With this
-pipeline, we load the data on the first line, and use the various data values declared to fill in the blanks:
+## The Files
+
+**`template.yml`** — the pipeline's shape, with `#@` markers where values get substituted in:
 
 ```yaml linenums="1"
 --8<-- "libs/examples/pipelines/templates/simple/template.yml"
 ```
 
-When specifying a values file, we denote it with the `#@data/values` notation and then specify all of our possible keys.
+**`vars.yml`** — the data values referenced above, marked with `#@data/values` so ytt knows to load them as inputs
+rather than treat them as a second template:
 
 ```yaml linenums="1"
 --8<-- "libs/examples/pipelines/templates/simple/vars.yml"
 ```
 
-Given the template and the data values, we can then compile the YAML files to gain our final output:
+## Rendering
 
-```shell
-$ ytt -f template.yml -f vars.yml
-jobs:
-- name: hello-world-job
-  plan:
-  - task: hello-task
-    config:
-      platform: linux
-      image_resource:
-        type: mock
-        source:
-          mirror_self: true
-      run:
-        path: echo
-        args:
-        - hello world of vars!
+With both files in the same directory, either of these produce the same output:
+
+```bash
+# explicit files
+ytt -f template.yml -f vars.yml > rendered.yml
+
+# everything in the current directory
+ytt -f . > rendered.yml
 ```
 
-The above can also be stored to an output file and then applied using [
-`fly set-pipeline`](../../docs/pipelines/setting-pipelines.md#fly-set-pipeline)
+This is what gets rendered:
 
-```shell
-ytt -f template.yml -f vars.yml > generated.yml
+```yaml linenums="1"
+jobs:
+  - name: hello-world-job
+    plan:
+      - task: hello-task
+        config:
+          platform: linux
+          image_resource:
+            type: mock
+            source:
+              mirror_self: true
+          run:
+            path: echo
+            args:
+              - "hello world of vars!"
+```
 
-fly -t main set-pipeline -p ytt-single-file -c generated.yml
+## Setting the Pipeline
+
+Treat `rendered.yml` like any other pipeline file:
+
+```bash
+fly -t main set-pipeline -p hello-world -c rendered.yml
+```
+
+Or, to render and set it in one motion from inside a pipeline, do the rendering in a task and feed the output straight
+into a [`set_pipeline` step](../../docs/steps/set-pipeline.md):
+
+```yaml linenums="1"
+jobs:
+  - name: set-single-rendered
+    plan:
+      - task: render-pipeline
+        config:
+          platform: linux
+          image_resource:
+            type: mock
+            source:
+              mirror_self: true
+          inputs:
+            - name: repo
+          outputs:
+            - name: pipeline
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                apk add --no-progress --quiet ytt
+                ytt -f repo/template.yml -f repo/vars.yml > pipeline/rendered.yml
+
+      - set_pipeline: hello-world
+        file: pipeline/rendered.yml
 ```
 
 <div>
