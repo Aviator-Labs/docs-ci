@@ -91,7 +91,7 @@ and its [configuration](https://github.com/concourse/ci/blob/master/pipelines/co
 
 <div>
   <div style="position:relative;padding-top:75%;">
-    <iframe src="https://ci.concourse-ci.org/teams/main/pipelines/concourse" allowfullscreen
+    <iframe src="https://ci.concourse-ci.org/teams/main/pipelines/concourse?hide_ui=true" allowfullscreen
       style="position:absolute;top:0;left:0;width:100%;height:100%;border:0"></iframe>
   </div>
 </div>

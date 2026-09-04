@@ -12,7 +12,7 @@ The [`git` resource](https://github.com/concourse/git-resource) can be used to t
 
 <div>
   <div style="position:relative;padding-top:40%;">
-    <iframe src="https://ci.concourse-ci.org/teams/examples/pipelines/git-triggered" allowfullscreen
+    <iframe src="https://ci.concourse-ci.org/teams/examples/pipelines/git-triggered?hide_ui=true" allowfullscreen
       style="position:absolute;top:0;left:0;width:100%;height:100%;border:0"></iframe>
   </div>
 </div>
