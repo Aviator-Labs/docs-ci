@@ -12,6 +12,7 @@ watch:
 
 markdown_extensions:
   - mkdocs_metrics_fence.extension
+  - json_schema_fence.extension
   - admonition
   - def_list
   - tables

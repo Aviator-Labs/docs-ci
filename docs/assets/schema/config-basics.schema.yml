@@ -1,0 +1,206 @@
+x-page: config-basics.md
+$defs:
+  number:
+    x-doc-type: true
+    x-type-label: number
+    description: Any integer, i.e. `1000`.
+    anyOf:
+      - type: integer
+        minimum: 0
+      - $ref: '#/$defs/var'
+  string:
+    x-doc-type: true
+    x-type-label: string
+    description: An arbitrary string value with no content restrictions.
+    type: string
+  config:
+    x-doc-type: true
+    x-type-label: config
+    description: |-
+      An arbitrary object representing configuration that is not directly interpreted by Concourse - typically given to
+      a [resource type](resource-types/index.md).
+
+      ```yaml
+      uri: https://github.com/concourse/examples
+      branch: master
+      ```
+
+      All object keys must be strings, preferably `snake_cased`.
+    anyOf:
+      - type: object
+      - $ref: '#/$defs/var'
+  vars:
+    x-doc-type: true
+    x-type-label: vars
+    description: |-
+      An arbitrary object representing key-value definitions for `((vars))`.
+
+      As with [`config` schema](#config-schema), all object keys must be strings, preferably `snake_cased`.
+    anyOf:
+      - type: object
+      - $ref: '#/$defs/var'
+  env-vars:
+    x-doc-type: true
+    x-type-label: env-vars
+    description: |-
+      An object containing string keys and string values. Each pair represents an environment variable to set to the given
+      value.
+
+      ```yaml
+      SOME_SIMPLE_VAR: simple-var
+      SOME_LONG_VAR: |
+        This is an example of using YAML multi-line string syntax to set a very
+        long environment variable value.
+      SOME_NUMERIC_VALUE: "1"
+      ```
+
+      Note that in the last example we took special care to quote the number.
+    $comment: Docs say strings; Go decoding is believed to coerce scalars. Permissive on purpose; verify
+      with corpus.
+    type:
+      - object
+      - string
+    if:
+      type: string
+    then:
+      $ref: '#/$defs/var'
+    else:
+      type: object
+      additionalProperties:
+        type:
+          - string
+          - number
+          - boolean
+          - 'null'
+  boolean:
+    x-doc-type: true
+    x-type-label: boolean
+    description: |-
+      `true` or `false`.
+
+      YAML also supports the alias `yes`, `no`, `on`, or `off`, but ... please don't.
+    anyOf:
+      - type: boolean
+      - $ref: '#/$defs/var'
+  value:
+    x-doc-type: true
+    x-type-label: value
+    description: |-
+      An arbitrary YAML value. It may be a [`number` schema](#number-schema), [`string` schema](#string-schema),
+      [`boolean` schema](#boolean-schema), [`config` schema](#config-schema), or an array of values ([`[value]`](#value-schema)).
+
+      ```yaml
+      values:
+        - 123
+        - bar
+        - true
+        - key1: abc
+          key2: def
+        - [ hello, world ]
+      ```
+  identifier:
+    x-doc-type: true
+    x-type-label: identifier
+    description: |-
+      An _identifier_ is a string value. The following defines the allowed character set for an _identifier_:
+
+      * Unicode lowercase letters, while still supporting languages that don't have any casing (e.g. Japanese).
+      * Decimal numbers.
+      * Hyphens `-` and underscores `_` as word separators.
+      * Periods `.` in order to support domain names and version numbers.
+
+      The validation rule is as follows:
+
+      ```regexp
+      ^[\p{Ll}\p{Lt}\p{Lm}\p{Lo}\d][\p{Ll}\p{Lt}\p{Lm}\p{Lo}\d\-_.]*$
+      ```
+
+      Where all _identifier_ must start with a Unicode lowercase letter or number, followed by any number of allowed
+      characters.
+
+      Currently, the validation will only show as warnings. For the sake of future-proofing, you may want to conform to it.
+    $comment: Docs define a regex (^[\p{Ll}\p{Lt}\p{Lm}\p{Lo}\d][\p{Ll}\p{Lt}\p{Lm}\p{Lo}\d\-_.]*$) but
+      Concourse only WARNS on violations, and across steps allow ((.:x)) inside identifiers. Not enforced.
+    type: string
+    minLength: 1
+  dir-path:
+    x-doc-type: true
+    x-type-label: dir-path
+    description: A string value specifying a (typically relative) path of a directory.
+    type: string
+  file-path:
+    x-doc-type: true
+    x-type-label: file-path
+    description: A string value specifying a (typically relative) path of a file.
+    type: string
+  duration:
+    x-doc-type: true
+    x-type-label: duration
+    description: |-
+      A string value in [Go `time.ParseDuration` format](https://golang.org/pkg/time/#ParseDuration). `1h` for one hour, `5m`
+      for 5 minutes.
+    $comment: Approximation of Go time.ParseDuration.
+    anyOf:
+      - type: string
+        pattern: ^[-+]?(?:(?:\d+\.?\d*|\.\d+)(?:ns|us|µs|μs|ms|s|m|h))+$|^[-+]?0$
+      - $ref: '#/$defs/var'
+  version:
+    x-doc-type: true
+    x-type-label: version
+    description: |-
+      An object with string keys and string values.
+
+      The following is an array of versions:
+
+      ```yaml
+      - { "ref": "33042e15e930b6786fc9b0a9ea5dec78689c5e4b" }
+      - ref: v1.2.0,
+        sha: 33042e15e930b6786fc9b0a9ea5dec78689c5e4b
+      - foo: "0"
+      ```
+
+      Note that in the last example we took special care to quote the number.
+
+      In many scenarios where a version can be specified, e.g. [`get` step `version`](steps/get.md#get-step), only a subset of
+      the full set of fields is necessary. The latest version matching the fields specified will be chosen.
+    type:
+      - object
+      - string
+    if:
+      type: string
+    then:
+      $ref: '#/$defs/var'
+    else:
+      type: object
+      additionalProperties:
+        type: string
+  var:
+    x-link: false
+    x-type-label: var
+    type: string
+    pattern: ^\(\(.+\)\)$
+    description: A `((var))` reference, resolved at runtime. Because vars are substituted structurally,
+      any value in a pipeline can be replaced by one.
+  stringList:
+    anyOf:
+      - type: array
+        items:
+          type: string
+      - $ref: '#/$defs/var'
+    x-type-label: '[string]'
+    x-anchor: string-schema
+  stringMap:
+    type:
+      - object
+      - string
+    if:
+      type: string
+    then:
+      $ref: '#/$defs/var'
+    else:
+      type: object
+      additionalProperties:
+        type: string
+    x-type-label: '{string: string}'
+    x-anchor: string-map
+    x-link: false
