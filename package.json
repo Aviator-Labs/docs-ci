@@ -5,6 +5,7 @@
     "build:scss": "sass --style=compressed src/mwc-theme.scss overrides/assets/stylesheets/mwc-theme.css",
     "build:mwc": "rollup -c rollup.config.mwc.js",
     "build:mwc-debug": "rollup -c rollup.config.mwc-debug.js",
+    "build:schema": "PYTHONPATH=. python tools/build-schema.py --docs docs --out docs/assets/schema/pipeline.json",
     "build:all": "npm run build:scss && npm run build:mwc && npm run build:ytt && npm run build:icon-list",
     "build:debug": "npm run build:scss && npm run build:mwc-debug && npm run build:ytt && npm run build:icon-list",
     "build:icon-list": "node ./tools/icon-list/generate-icon-list.mjs",
