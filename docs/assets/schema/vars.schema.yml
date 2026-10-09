@@ -1,0 +1,254 @@
+x-page: vars.md
+$defs:
+  varSource:
+    type: object
+    required:
+      - name
+      - type
+      - config
+    properties:
+      name:
+        $ref: '#/$defs/identifier'
+        description: |-
+          The name of the `((var))` source. This should be short and simple. This name will be referenced
+          [`((var))` syntax](#var-syntax) throughout the config.
+      type:
+        enum:
+          - vault
+          - dummy
+          - ssm
+          - secretsmanager
+          - idtoken
+        description: |-
+          The type of the var source. It decides what `config` holds.
+
+          * `vault`: The `vault` type supports configuring a [Vault](https://www.vaultproject.io/) server as a `((var))` source.
+          * `dummy`: The `dummy` type supports configuring a static map of vars to values.
+          * `ssm`: The `SSM` type supports configuring an [AWS Systems Manager](https://aws.amazon.com/systems-manager/) in a single region as a `((var))` source.
+          * `secretsmanager`: The `secretsmanager` type supports configuring an [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) in a single region as a `((var))` source.
+          * `idtoken`: The `idtoken` type issues JWTs which are signed by concourse and contain information about the currently running pipeline/job.
+      config:
+        type: object
+        description: The configuration for the chosen type of var source.
+    additionalProperties: false
+    allOf:
+      - if:
+          properties:
+            type:
+              const: vault
+          required:
+            - type
+        then:
+          properties:
+            config:
+              $ref: '#/$defs/vaultConfig'
+      - if:
+          properties:
+            type:
+              const: dummy
+          required:
+            - type
+        then:
+          properties:
+            config:
+              $ref: '#/$defs/dummyConfig'
+      - if:
+          properties:
+            type:
+              const: ssm
+          required:
+            - type
+        then:
+          properties:
+            config:
+              $ref: '#/$defs/ssmConfig'
+      - if:
+          properties:
+            type:
+              const: secretsmanager
+          required:
+            - type
+        then:
+          $comment: The docs' bullet list says `secretmanager`, but the type heading and the schema section
+            both say `secretsmanager` (checked against the v8.3 docs); the heading is followed. Worth fixing
+            upstream.
+          properties:
+            config:
+              $ref: '#/$defs/secretsManagerConfig'
+      - if:
+          properties:
+            type:
+              const: idtoken
+          required:
+            - type
+        then:
+          properties:
+            config:
+              $ref: '#/$defs/idtokenConfig'
+    x-type-label: var_source
+    x-docs: false
+  vaultConfig:
+    type: object
+    additionalProperties: false
+    properties:
+      url:
+        $ref: '#/$defs/string'
+        description: The URL of the Vault API.
+        x-doc-required: true
+        x-required-text: false
+      ca_cert:
+        $ref: '#/$defs/string'
+        description: The PEM encoded contents of a CA certificate to use when connecting to the API.
+      path_prefix:
+        $ref: '#/$defs/string'
+        description: |-
+          _Default `/concourse`_. A prefix under which to look for all credential values.
+
+          See [Changing the path prefix](operation/creds/vault.md#changing-the-path-prefix) for more information.
+      lookup_templates:
+        $ref: '#/$defs/stringList'
+        description: |-
+          _Default `["/{{.Team}}/{{.Pipeline}}/{{.Secret}}", "/{{.Team}}/{{.Secret}}"]`_.
+
+          A list of path templates to be expanded in a team and pipeline context subject to the `path_prefix` and
+          `namespace`.
+
+          See [Changing the path templates](operation/creds/vault.md#changing-the-path-templates) for more
+          information.
+      shared_path:
+        $ref: '#/$defs/string'
+        description: |-
+          An additional path under which credentials will be looked up.
+
+          See [Configuring a shared path](operation/creds/vault.md#configuring-a-shared-path) for more
+          information.
+      namespace:
+        $ref: '#/$defs/string'
+        description: A [Vault namespace](https://www.vaultproject.io/docs/enterprise/namespaces/index.html)
+          to operate under.
+      client_cert:
+        $ref: '#/$defs/string'
+        description: |-
+          A PEM encoded client certificate, for use with TLS based auth.
+
+          See [Using the `cert` auth backend](operation/creds/vault.md#using-the-cert-auth-backend) for more
+          information.
+      client_key:
+        $ref: '#/$defs/string'
+        description: |-
+          A PEM encoded client key, for use with TLS based auth.
+
+          See [Using the `cert` auth backend](operation/creds/vault.md#using-the-cert-auth-backend) for more
+          information.
+      server_name:
+        $ref: '#/$defs/string'
+        description: The expected name of the server when connecting through TLS.
+      insecure_skip_verify:
+        $ref: '#/$defs/boolean'
+        description: Skip TLS validation. Not recommended. Don't do it. No really, don't.
+      client_token:
+        $ref: '#/$defs/string'
+        description: |-
+          Authenticate via a periodic client token.
+
+          See [Using a periodic token](operation/creds/vault.md#using-a-periodic-token) for more information.
+      auth_backend:
+        $ref: '#/$defs/string'
+        description: |-
+          Authenticate using an auth backend, e.g. `cert` or `approle`.
+
+          See [Using the `approle` auth backend](operation/creds/vault.md#using-the-approle-auth-backend) or
+          [Using the `cert` auth backend](operation/creds/vault.md#using-the-cert-auth-backend) for more
+          information.
+      auth_params:
+        $ref: '#/$defs/env-vars'
+        description: |-
+          A key-value map of parameters to pass during authentication.
+
+          See [Using the `approle` auth backend](operation/creds/vault.md#using-the-approle-auth-backend) for more
+          information.
+      auth_max_ttl:
+        $ref: '#/$defs/duration'
+        description: Maximum duration to elapse before forcing the client to log in again.
+      auth_retry_max:
+        $ref: '#/$defs/duration'
+        description: When failing to authenticate, give up after this amount of time.
+      auth_retry_initial:
+        $ref: '#/$defs/duration'
+        description: |-
+          When retrying during authentication, start with this retry interval. The interval will increase
+          exponentially until `auth_retry_max` is reached.
+      enable_kv_mount_cache:
+        $ref: '#/$defs/boolean'
+        description: |-
+          By default, this feature is disabled. When disabled, Concourse queries Vault on every secret lookup to determine whether the secret resides in a KV version 1 or version 2 mount, as this affects how the secret is retrieved.
+
+          When enabled, KV mount metadata is cached. This allows Concourse to fetch mount information once and reuse it for subsequent lookups, reducing the number of Vault API calls and improving performance.
+    x-type-label: vault_config
+    x-field-headings: false
+  dummyConfig:
+    type: object
+    additionalProperties: false
+    required:
+      - vars
+    properties:
+      vars:
+        $ref: '#/$defs/vars'
+        description: A mapping of var name to var value.
+        x-required-text: false
+    x-type-label: dummy_config
+    x-field-headings: false
+  ssmConfig:
+    type: object
+    additionalProperties: false
+    properties:
+      region:
+        $ref: '#/$defs/string'
+        description: The AWS region to read secrets from.
+        x-doc-required: true
+        x-required-text: false
+    x-type-label: ssm_config
+    x-field-headings: false
+  secretsManagerConfig:
+    type: object
+    additionalProperties: false
+    properties:
+      region:
+        $ref: '#/$defs/string'
+        description: The AWS region to read secrets from.
+        x-doc-required: true
+        x-required-text: false
+    x-type-label: secretsmanager_config
+    x-field-headings: false
+  idtokenConfig:
+    type: object
+    additionalProperties: false
+    properties:
+      audience:
+        $ref: '#/$defs/stringList'
+        description: A list of audience-values to place into the token's aud-claim.
+        x-doc-required: true
+        x-required-text: false
+      subject_scope:
+        $ref: '#/$defs/string'
+        description: |-
+          _Default `pipeline`_.
+
+          Determines what is put into the token's sub-claim. See
+          [Subject Scope](operation/creds/id-token.md#subject-scope) for a detailed explanation.
+        x-type: '`team` | `pipeline` | `instance` | `job` | [`string`](config-basics.md#string-schema)'
+      expires_in:
+        $ref: '#/$defs/duration'
+        description: |-
+          _Default `1h`_. Cannot be longer than `24h`.
+
+          How long the token should be valid.
+      algorithm:
+        $ref: '#/$defs/string'
+        description: |-
+          _Default `RS256`_.
+
+          The signature algorithm to use for the token.
+        x-type: '`RS256` | `ES256` | [`string`](config-basics.md#string-schema)'
+    x-type-label: idtoken_config
+    x-field-headings: false

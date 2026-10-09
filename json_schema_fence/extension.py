@@ -1,92 +1,64 @@
 """mkdocs_schema_fence: expand a ```concourse-schema fence into the docs' field reference.
 
-Self-contained on purpose (same shape as mkdocs_metrics_fence): this file imports only the standard library
-and `markdown`. PyYAML is imported lazily and only if a *.schema.yml fragment or a YAML fence body is used.
-It does NOT share code with tools/build_schema.py; tests/check_loader_parity.py keeps the two loaders honest.
+Self-contained on purpose (same shape as mkdocs_metrics_fence): imports only the standard library, `markdown`
+and PyYAML (already a dependency of Zensical and MkDocs). It shares no code with tools/build_schema.py;
+tests/check_loader_parity.py keeps the two loaders honest.
 
-Usage in a page (the fragment is embedded by pymdownx.snippets, which runs first):
+Page usage (the fence may be indented, e.g. inside a content tab or another admonition):
 
     ```concourse-schema
-    --8<-- "steps/get.schema.yml"
+    def: getFields               <- the fields of one def  (optional `hide: [a, b]` or `only: [a, b]`)
+    ```
+    ```concourse-schema
+    --8<-- "config-basics.schema.yml"     <- a whole fragment, embedded by pymdownx.snippets (runs first)
     ```
 
-or render a single def:   {"def": "getFields", "hide": ["no_get"]}   (JSON, or YAML `def: getFields`)
+Output reproduces the hand-written pages, field by field:
 
-What is generated, matching the hand-written pages it replaces:
+    ??? info "**`passed`**: [`[job.name]`](../jobs.md#job-schema)"      <- ??? warning for required fields
+        ### `passed`                  <- the field heading: #passed anchor, TOC entry, search hit
+        description, verbatim
 
-  * every field of an object def:   ???+ warning|info "**`name`**: [`type`](link) (required)"
-                                        ### `name`          <- the heading gives the #name anchor, TOC and search hit
-                                        prose...
-    (required fields use `warning`, others `info`; nested fields get no heading, like the original pages)
-  * every *type* def (`x-doc-type`):  ### `number` schema   <- anchor #number-schema, as config-basics.md uses
-                                      prose...
-  * a def that is not the page's first object def gets a  ### `label` schema  section heading
-  * type links are RELATIVE .md links with anchors (../config-basics.md#identifier-schema), computed from the page
-    that owns the fragment (`x-page`), so the site build validates them like any other link.
+Everything that varies per field lives in the fragment, written there by tools/import_docs.py:
+
+  field:  description | x-type (raw signature text) | x-heading (false | level) | x-open | x-doc-required
+          x-required-text (false = warning colour without the words "(required)") | x-group | x-docs: false
+  object schema inside a field:  x-type-label (adds a `### label schema` heading) | x-heading-level
+  def:    x-page | x-type-label | x-anchor | x-link | x-docs | x-open | x-field-headings | x-heading-level
+          x-doc-type (a documented *type*, rendered as `### `label` schema` + prose) | x-step-key
+
+Links are relative .md links computed from the page that owns the fragment (`x-page`), so the site build
+validates them like any hand-written link.
 
 mkdocs.yml:
     - pymdownx.snippets: {base_path: [docs/assets/schema, docs], check_paths: true}
     - mkdocs_schema_fence.extension: {docs_root: docs/assets/schema}
-
-Fragment keys read here (all `x-*`): x-page, x-type-label, x-anchor, x-since, x-docs, x-step-key,
-x-doc-type, x-field-headings, x-heading-level, x-link
-x-type-label / x-type-link on a FIELD override how its type is shown (passed -> [job.name] linking jobs.md#name);
-on an inline object it also adds a `### label schema` sub-heading, e.g. build_log_retention_policy.
 """
-import json
 import os
-import posixpath
 import pathlib
+import posixpath
 import re
 import textwrap
 
+import yaml
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-FENCE_PATTERN = re.compile(r"```concourse-schema\n(.*?)\n```", re.DOTALL)
+FENCE_PATTERN = re.compile(r"^([ \t]*)```concourse-schema[ \t]*\n(.*?)\n\1```[ \t]*$", re.DOTALL | re.MULTILINE)
 DEFAULT_ROOT = "docs/assets/schema"
-SUFFIXES = (".schema.json", ".schema.yml", ".schema.yaml")
-# (every field, required field): required fields use a different admonition type to stay visually distinct
-ADMONITIONS = ("??? info", "??? warning")
-HEADING_LEVEL = 3  # level of field headings and section headings unless a def sets x-heading-level
+SUFFIX = ".schema.yml"
+HEADING_LEVEL = 3  # field and section headings, unless a def sets x-heading-level
+LINK = re.compile(r"\]\((?P<path>[^)#\s]*)(?P<frag>#[^)\s]*)?\)")
 
 
 # ------------------------------------------------------------------ loading fragments
-def _yaml():
-    try:
-        import yaml  # lazy: JSON-only setups never import it
-    except ImportError as e:
-        raise ImportError(
-            "PyYAML is required to read *.schema.yml fragments or YAML fence bodies. "
-            "Zensical/MkDocs already depend on it; otherwise `pip install pyyaml`, or use *.schema.json fragments."
-        ) from e
-    return yaml
-
-
-def parse_text(text):
-    """JSON first (stdlib); YAML as the fallback, since JSON is a subset of YAML."""
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError:
-        return _yaml().safe_load(text)
-
-
-def _load_fragment(path):
-    text = path.read_text(encoding="utf-8")
-    return json.loads(text) if path.name.endswith(".schema.json") else _yaml().safe_load(text)
-
-
 class Index:
     """All defs across all fragments, and which docs page owns each (used to link types)."""
 
     def __init__(self, files):
-        self.defs, self.owner, stems = {}, {}, {}
+        self.defs, self.owner = {}, {}
         for p in files:
-            stem = str(p.with_name(p.name.split(".schema.")[0]))
-            if stem in stems:
-                raise ValueError(f"{p.name} and {stems[stem].name} are the same fragment in two formats; keep one")
-            stems[stem] = p
-            frag = _load_fragment(p)
+            frag = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
             if "$schema" in frag or "$id" in frag:
                 raise ValueError(
                     f"{p} looks like a bundled schema, not a fragment. Name published bundles without the "
@@ -105,7 +77,7 @@ _CACHE = {}
 def load_index(root=None):
     """Parsed once per build; re-parsed when any fragment changes, so live reload sees edits."""
     root = pathlib.Path(root or os.environ.get("CONCOURSE_DOCS_ROOT", DEFAULT_ROOT))
-    files = sorted(p for p in root.rglob("*.schema.*") if p.name.endswith(SUFFIXES))
+    files = sorted(p for p in root.rglob("*" + SUFFIX))
     sig = tuple((str(p), p.stat().st_mtime_ns) for p in files)
     hit = _CACHE.get(root)
     if hit and hit[0] == sig:
@@ -123,11 +95,6 @@ class Ctx:
         self.page, self.base, self.style = page, base, style
 
 
-def _text(value):
-    """`description` may be a string or a list of lines (list form keeps JSON prose readable)."""
-    return "\n".join(value) if isinstance(value, list) else (value or "")
-
-
 def _kebab(name):
     name = re.sub(r"Fields$", "", name)
     return re.sub(r"(?<!^)(?=[A-Z])", "-", name).lower()
@@ -139,7 +106,7 @@ def _slug(label):
 
 
 def _anchor(idx, name):
-    """Anchor of a def on its owning page: the docs' own `<label>-schema` heading, unless x-anchor says otherwise
+    """Anchor of a def on its owning page: the docs' `<label>-schema` heading, unless x-anchor says otherwise
     ('' = link to the page without an anchor)."""
     d = idx.defs[name]
     if "x-anchor" in d:
@@ -164,20 +131,30 @@ def _link(idx, name, ctx):
     return _href(page, ctx) + (f"#{anchor}" if anchor else "")
 
 
+def _rel_links(text, ctx):
+    """Links in x-type are stored relative to the docs root; make them relative to the page being rendered."""
+
+    def sub(m):
+        path, frag = m.group("path"), m.group("frag") or ""
+        if path.endswith(".md"):  # keep the page path even for the current page: it is what the original wrote
+            path = posixpath.relpath(path, posixpath.dirname(ctx.page) or ".") if ctx.page else path
+        return f"]({path}{frag})"
+
+    return LINK.sub(sub, text)
+
+
 def _segments(node, idx, ctx):
     """A schema node's type as alternatives: [(label, link-or-None), ...]."""
-    label = node.get("x-type-label")
-    if label:  # per-field override, e.g. `passed` is "[job.name]" in the docs, not "[string]"
-        if node.get("x-type-link"):  # "jobs.md#name": relative to the page being rendered, like every other link
-            page, _, anchor = node["x-type-link"].partition("#")
-            return [(label, _href(page, ctx) + (f"#{anchor}" if anchor else ""))]
-        return [(label, f"#{_slug(label)}-schema" if "properties" in node else None)]  # named sub-schema: same page
     if "$ref" in node:
         name = node["$ref"].rsplit("/", 1)[-1]
         label = idx.defs.get(name, {}).get("x-type-label") or _kebab(name)
         return [(label, _link(idx, name, ctx))]
+    if node.get("type") != "array" and "anyOf" not in node:  # a named inline sub-schema: link to its own heading
+        inner = _inline_object(node)
+        if inner and inner.get("x-type-label"):
+            return [(inner["x-type-label"], f"#{_slug(inner['x-type-label'])}-schema")]
     if "enum" in node:
-        return [(" | ".join(str(v) for v in node["enum"]), None)]
+        return [(str(v), None) for v in node["enum"]]
     if "const" in node:
         return [(str(node["const"]), None)]
     if "anyOf" in node:
@@ -194,6 +171,13 @@ def _segments(node, idx, ctx):
     if isinstance(t, list):
         t = next((x for x in t if x != "string"), t[0])
     return [({"integer": "number"}.get(t, t or "any"), None)]
+
+
+def type_markdown(node, idx, ctx):
+    """The type part of a field signature. x-type (raw text, set by the importer) wins over the derived one."""
+    if node.get("x-type"):
+        return _rel_links(node["x-type"], ctx)
+    return " | ".join(f"[`{l}`]({u})" if u else f"`{l}`" for l, u in _segments(node, idx, ctx))
 
 
 def _inline_object(node):
@@ -216,21 +200,22 @@ def _heading(level, text):
     return f"{'#' * level} {text}"
 
 
-def render_markdown(idx, name, ctx, hide=(), admonition=ADMONITIONS, node=None):
-    """Render the fields of one object def. `node` lets file mode pass the def as the fence body supplied it."""
+def render_markdown(idx, name, ctx, hide=(), node=None, only=None):
+    """Render the fields of one object def (`only`: just these fields, in the schema's order). `node` lets file
+    mode pass the def as the fence body supplied it."""
     d = node if node is not None else idx.defs[name]
-    level = d.get("x-heading-level", HEADING_LEVEL) if d.get("x-field-headings", True) else None
-    return "\n".join(_object_blocks(idx, d, ctx, tuple(hide), admonition, level))
+    level = None if d.get("x-field-headings") is False else d.get("x-heading-level", HEADING_LEVEL)
+    return "\n".join(_object_blocks(idx, d, ctx, tuple(hide), level, bool(d.get("x-open")), 0, only))
 
 
 def _type_section(name, d):
     """A documented *type* (config-basics): `### `number` schema` + prose."""
     label = d.get("x-type-label") or name
     head = _heading(d.get("x-heading-level", HEADING_LEVEL), f"`{label}` schema")
-    return f"{head}\n\n{_text(d.get('description')).strip()}\n"
+    return f"{head}\n\n{(d.get('description') or '').strip()}\n"
 
 
-def render_fragment(idx, frag, ctx, admonition=ADMONITIONS):
+def render_fragment(idx, frag, ctx):
     """File mode: the fence body is a whole fragment. Renders, in file order, every type def (x-doc-type) and every
     def that has fields, skipping `x-docs: false`. The first object def is the page's main schema (its heading is
     written by hand on the page); every other object def gets a `### `label` schema` section heading."""
@@ -245,47 +230,55 @@ def render_fragment(idx, frag, ctx, admonition=ADMONITIONS):
             label = d.get("x-type-label") or name
             out.append(_heading(d.get("x-heading-level", HEADING_LEVEL), f"`{label}` schema") + "\n")
         seen_object = True
-        out.append(render_markdown(idx, name, ctx, (), admonition, node=d))
+        out.append(render_markdown(idx, name, ctx, (), node=d))
     return "\n".join(out)
 
 
-def _object_blocks(idx, node, ctx, hide, adm, heading_level):
+def _object_blocks(idx, node, ctx, hide, level, open_, depth, only=None):
     obj = node if "properties" in node else (_inline_object(node) or {})
     required = set(obj.get("required", []))
     if node.get("x-step-key"):  # the key that selects a step type is required in practice
         required.add(node["x-step-key"])
-    return [
-        _field_block(idx, prop, sub, prop in required, ctx, adm, heading_level)
-        for prop, sub in (obj.get("properties") or {}).items()
-        if prop not in hide
-    ]
+    out, prev_group = [], None
+    for prop, sub in (obj.get("properties") or {}).items():
+        if prop in hide or sub.get("x-docs") is False or (only is not None and prop not in only):
+            continue
+        group = sub.get("x-group") if depth == 0 else None
+        if group and group != prev_group:  # e.g. `### Job Hooks` above the five hooks
+            out.append(_heading(group.get("level", HEADING_LEVEL), group["text"]) + "\n")
+        prev_group = group
+        out.append(_field_block(idx, prop, sub, prop in required, ctx, level, open_, depth))
+    return out
 
 
-def _field_block(idx, prop, sub, required, ctx, adm, heading_level):
-    """heading_level is None for nested fields: like the original pages, only the primary schema's fields get
-    a heading (that heading is what creates the #anchor, the TOC entry and the search result)."""
+def _field_block(idx, prop, sub, schema_required, ctx, level, open_, depth):
+    """Only the primary schema's fields (depth 0) get a heading: it creates the #anchor, the TOC entry and the
+    search hit. Nested fields, like in the hand-written pages, do not."""
     ref_def = idx.defs.get(sub["$ref"].rsplit("/", 1)[-1], {}) if "$ref" in sub else {}
-    desc = _text(sub.get("description") or ref_def.get("description")).strip()
-    since = sub.get("x-since") or ref_def.get("x-since")
-    types = " | ".join(f"[`{l}`]({u})" if u else f"`{l}`" for l, u in _segments(sub, idx, ctx))
-    title = f"**`{prop}`**: {types}"
-    if required:
-        title += " (required)"
-    if since:
-        title += f" *since {since}*"
+    desc = (sub.get("description") or ref_def.get("description") or "").strip("\n")
+    warn = sub.get("x-doc-required", schema_required)  # warning colour
+    words = warn and sub.get("x-required-text", True)  # the literal "(required)"
+    title = f"**`{prop}`**: {type_markdown(sub, idx, ctx)}" + (" (required)" if words else "")
     if sub.get("deprecated"):
         title += " *deprecated*"
+    hl = sub.get("x-heading", level) if depth == 0 else None
+    hl = None if hl is False else hl
     nested = _inline_object(sub)
-    nested_blocks = _object_blocks(idx, nested, ctx, (), adm, None) if nested else []
-    if nested and nested.get("x-type-label"):  # a named sub-schema, e.g. build_log_retention_policy
-        level = nested.get("x-heading-level", HEADING_LEVEL + 1)
-        nested_blocks.insert(0, _heading(level, f"`{nested['x-type-label']}` schema") + "\n")
-    body = ([_heading(heading_level, f"`{prop}`")] if heading_level else []) + ([desc] if desc else []) + nested_blocks
+    body = []
+    if hl:
+        body.append(_heading(hl, f"`{prop}`"))
+    if desc:
+        body.append(desc)
+    if nested:
+        if nested.get("x-type-label"):  # a named sub-schema, e.g. build_log_retention_policy
+            sub_level = nested.get("x-heading-level", (hl + 1) if hl else HEADING_LEVEL)
+            body.append(_heading(sub_level, f"`{nested['x-type-label']}` schema") + "\n")
+        body += _object_blocks(idx, nested, ctx, (), None, sub.get("x-open", open_), depth + 1)
     if not body:
         return title + "\n"  # nothing to put in a box: plain line, not an empty admonition
-    opener = adm[1] if required else adm[0]
+    opener = f"{'???+' if sub.get('x-open', open_) else '???'} {'warning' if warn else 'info'}"
     inner = textwrap.indent("\n\n".join(body), "    ")
-    return f'{opener} "{title.replace(chr(34), "&quot;")}"\n{inner}\n'
+    return f'{opener} "{title.replace(chr(34), "&quot;")}"\n\n{inner}\n'
 
 
 # ------------------------------------------------------------------ the extension
@@ -294,43 +287,41 @@ class SchemaFencePreprocessor(Preprocessor):
         super().__init__(md)
         self.config = config
 
-    def _adm(self):
-        return (self.config["admonition"], self.config["admonition_required"])
-
     def run(self, lines):
         text = "\n".join(lines)
 
-        def replace_with_admonitions(match):
-            spec = parse_text(match.group(1))  # JSON body, or YAML body when PyYAML is available
+        def replace_fence(match):
+            indent, body = match.group(1), match.group(2)
+            body = "\n".join(ln[len(indent):] if ln.startswith(indent) else ln.lstrip() for ln in body.split("\n"))
+            spec = yaml.safe_load(body)
             if not isinstance(spec, dict):
                 hint = (" (a `--8<--` line was not expanded: enable pymdownx.snippets, and keep this extension "
-                        "at a lower priority than snippets=32)" if "--8<--" in match.group(1) else "")
+                        "at a lower priority than snippets=32)" if "--8<--" in body else "")
                 raise ValueError("concourse-schema fence: body must be a mapping, either "
                                  "a def reference (def: name) or a whole schema fragment; "
-                                 f"got {match.group(1)[:60]!r}{hint}")
+                                 f"got {body[:60]!r}{hint}")
             idx = load_index(self.config["docs_root"] or None)
             if "$defs" in spec:  # file mode: body is a whole fragment, e.g. embedded via --8<--
                 ctx = Ctx(spec.get("x-page"), self.config["base_url"], self.config["link_style"])
-                return render_fragment(idx, spec, ctx, self._adm())
-            if spec.get("def") not in idx.defs:
-                raise ValueError(f"concourse-schema fence: unknown def {spec.get('def')!r}")
-            # the fence sits on the page that owns the def (tools/build_schema.py --check-links enforces it)
-            ctx = Ctx(idx.owner.get(spec["def"]), self.config["base_url"], self.config["link_style"])
-            return render_markdown(idx, spec["def"], ctx, spec.get("hide", ()), self._adm())
+                out = render_fragment(idx, spec, ctx)
+            else:
+                if spec.get("def") not in idx.defs:
+                    raise ValueError(f"concourse-schema fence: unknown def {spec.get('def')!r}")
+                # the fence sits on the page that owns the def (tools/build_schema.py --check-links enforces it)
+                ctx = Ctx(idx.owner.get(spec["def"]), self.config["base_url"], self.config["link_style"])
+                out = render_markdown(idx, spec["def"], ctx, spec.get("hide", ()), only=spec.get("only"))
+            return textwrap.indent(out.rstrip("\n"), indent) if indent else out.rstrip("\n")
 
-        text = FENCE_PATTERN.sub(replace_with_admonitions, text)
-        return text.split("\n")
+        return FENCE_PATTERN.sub(replace_fence, text).split("\n")
 
 
 class SchemaFenceExtension(Extension):
     def __init__(self, **kwargs):
         self.config = {
             "docs_root": ["",
-                          f"Directory holding *.schema.* fragments (default: $CONCOURSE_DOCS_ROOT or {DEFAULT_ROOT})"],
+                          f"Directory holding *.schema.yml fragments (default: $CONCOURSE_DOCS_ROOT or {DEFAULT_ROOT})"],
             "link_style": ["relative", "'relative' (../config-basics.md#x, validated by the site build) or 'absolute'"],
             "base_url": ["/docs/", "URL prefix for link_style=absolute"],
-            "admonition": ["??? info", "Admonition opener for every field, same style the metrics fence uses"],
-            "admonition_required": ["??? warning", "Admonition opener for required fields (visual separation)"],
         }
         super().__init__(**kwargs)
 
