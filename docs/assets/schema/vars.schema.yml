@@ -3,9 +3,9 @@ $defs:
   varSource:
     type: object
     required:
-      - name
-      - type
-      - config
+    - name
+    - type
+    - config
     properties:
       name:
         $ref: '#/$defs/identifier'
@@ -14,11 +14,11 @@ $defs:
           [`((var))` syntax](#var-syntax) throughout the config.
       type:
         enum:
-          - vault
-          - dummy
-          - ssm
-          - secretsmanager
-          - idtoken
+        - vault
+        - dummy
+        - ssm
+        - secretsmanager
+        - idtoken
         description: |-
           The type of the var source. It decides what `config` holds.
 
@@ -32,59 +32,59 @@ $defs:
         description: The configuration for the chosen type of var source.
     additionalProperties: false
     allOf:
-      - if:
-          properties:
-            type:
-              const: vault
-          required:
-            - type
-        then:
-          properties:
-            config:
-              $ref: '#/$defs/vaultConfig'
-      - if:
-          properties:
-            type:
-              const: dummy
-          required:
-            - type
-        then:
-          properties:
-            config:
-              $ref: '#/$defs/dummyConfig'
-      - if:
-          properties:
-            type:
-              const: ssm
-          required:
-            - type
-        then:
-          properties:
-            config:
-              $ref: '#/$defs/ssmConfig'
-      - if:
-          properties:
-            type:
-              const: secretsmanager
-          required:
-            - type
-        then:
-          $comment: The docs' bullet list says `secretmanager`, but the type heading and the schema section
-            both say `secretsmanager` (checked against the v8.3 docs); the heading is followed. Worth fixing
-            upstream.
-          properties:
-            config:
-              $ref: '#/$defs/secretsManagerConfig'
-      - if:
-          properties:
-            type:
-              const: idtoken
-          required:
-            - type
-        then:
-          properties:
-            config:
-              $ref: '#/$defs/idtokenConfig'
+    - if:
+        properties:
+          type:
+            const: vault
+        required:
+        - type
+      then:
+        properties:
+          config:
+            $ref: '#/$defs/vaultConfig'
+    - if:
+        properties:
+          type:
+            const: dummy
+        required:
+        - type
+      then:
+        properties:
+          config:
+            $ref: '#/$defs/dummyConfig'
+    - if:
+        properties:
+          type:
+            const: ssm
+        required:
+        - type
+      then:
+        properties:
+          config:
+            $ref: '#/$defs/ssmConfig'
+    - if:
+        properties:
+          type:
+            const: secretsmanager
+        required:
+        - type
+      then:
+        $comment: The docs' bullet list says `secretmanager`, but the type heading and the schema section
+          both say `secretsmanager` (checked against the v8.3 docs); the heading is followed. Worth fixing
+          upstream.
+        properties:
+          config:
+            $ref: '#/$defs/secretsManagerConfig'
+    - if:
+        properties:
+          type:
+            const: idtoken
+        required:
+        - type
+      then:
+        properties:
+          config:
+            $ref: '#/$defs/idtokenConfig'
     x-type-label: var_source
     x-docs: false
   vaultConfig:
@@ -190,7 +190,7 @@ $defs:
     type: object
     additionalProperties: false
     required:
-      - vars
+    - vars
     properties:
       vars:
         $ref: '#/$defs/vars'

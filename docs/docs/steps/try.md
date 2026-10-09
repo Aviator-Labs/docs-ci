@@ -4,12 +4,9 @@ tags:
   - Step
 ---
 
-???+ warning "**`try`**: [`step`](index.md) (required)"
-
-    Performs the given step, ignoring any failure and masking it with success.
-
-    This can be used when you want to perform some side effect, but you don't
-    really want the whole build to fail if it doesn't work.
+```concourse-schema
+def: tryFields
+```
 
 ---
 

@@ -42,10 +42,10 @@ $defs:
               If none of a job's `get` steps are set to `true`, the job can only be manually triggered.
       version:
         anyOf:
-          - enum:
-              - latest
-              - every
-          - $ref: '#/$defs/version'
+        - enum:
+          - latest
+          - every
+        - $ref: '#/$defs/version'
         description: |-
           _Default `latest`_. The version of the resource to fetch.
 

@@ -7,9 +7,9 @@ tags:
 
 # `on_abort` Step Hook
 
-???+ info "`on_abort`: [`step`](../index.md)"
-
-    A hook step to execute if the build is aborted and the parent step was running and then terminated.
+```concourse-schema
+def: on_abortModifier
+```
 
 ---
 

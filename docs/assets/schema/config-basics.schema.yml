@@ -5,9 +5,9 @@ $defs:
     x-type-label: number
     description: Any integer, i.e. `1000`.
     anyOf:
-      - type: integer
-        minimum: 0
-      - $ref: '#/$defs/var'
+    - type: integer
+      minimum: 0
+    - $ref: '#/$defs/var'
   string:
     x-doc-type: true
     x-type-label: string
@@ -27,8 +27,8 @@ $defs:
 
       All object keys must be strings, preferably `snake_cased`.
     anyOf:
-      - type: object
-      - $ref: '#/$defs/var'
+    - type: object
+    - $ref: '#/$defs/var'
   vars:
     x-doc-type: true
     x-type-label: vars
@@ -37,8 +37,8 @@ $defs:
 
       As with [`config` schema](#config-schema), all object keys must be strings, preferably `snake_cased`.
     anyOf:
-      - type: object
-      - $ref: '#/$defs/var'
+    - type: object
+    - $ref: '#/$defs/var'
   env-vars:
     x-doc-type: true
     x-type-label: env-vars
@@ -58,8 +58,8 @@ $defs:
     $comment: Docs say strings; Go decoding is believed to coerce scalars. Permissive on purpose; verify
       with corpus.
     type:
-      - object
-      - string
+    - object
+    - string
     if:
       type: string
     then:
@@ -68,10 +68,10 @@ $defs:
       type: object
       additionalProperties:
         type:
-          - string
-          - number
-          - boolean
-          - 'null'
+        - string
+        - number
+        - boolean
+        - 'null'
   boolean:
     x-doc-type: true
     x-type-label: boolean
@@ -80,14 +80,14 @@ $defs:
 
       YAML also supports the alias `yes`, `no`, `on`, or `off`, but ... please don't.
     anyOf:
-      - type: boolean
-      - $ref: '#/$defs/var'
+    - type: boolean
+    - $ref: '#/$defs/var'
   value:
     x-doc-type: true
     x-type-label: value
     description: |-
-      An arbitrary YAML value. It may be a [`number` schema](#number-schema), [`string` schema](#string-schema),
-      [`boolean` schema](#boolean-schema), [`config` schema](#config-schema), or an array of values ([`[value]`](#value-schema)).
+      An arbitrary YAML value. It may be a [`number` schema](#number-schema), [`string` schema](#string-schema), [
+      `boolean` schema](#boolean-schema), [`config` schema](#config-schema), or a [`[value` schema`]`](#value-schema).
 
       ```yaml
       values:
@@ -141,9 +141,9 @@ $defs:
       for 5 minutes.
     $comment: Approximation of Go time.ParseDuration.
     anyOf:
-      - type: string
-        pattern: ^[-+]?(?:(?:\d+\.?\d*|\.\d+)(?:ns|us|µs|μs|ms|s|m|h))+$|^[-+]?0$
-      - $ref: '#/$defs/var'
+    - type: string
+      pattern: ^[-+]?(?:(?:\d+\.?\d*|\.\d+)(?:ns|us|µs|μs|ms|s|m|h))+$|^[-+]?0$
+    - $ref: '#/$defs/var'
   version:
     x-doc-type: true
     x-type-label: version
@@ -164,8 +164,8 @@ $defs:
       In many scenarios where a version can be specified, e.g. [`get` step `version`](steps/get.md#get-step), only a subset of
       the full set of fields is necessary. The latest version matching the fields specified will be chosen.
     type:
-      - object
-      - string
+    - object
+    - string
     if:
       type: string
     then:
@@ -183,16 +183,16 @@ $defs:
       any value in a pipeline can be replaced by one.
   stringList:
     anyOf:
-      - type: array
-        items:
-          type: string
-      - $ref: '#/$defs/var'
+    - type: array
+      items:
+        type: string
+    - $ref: '#/$defs/var'
     x-type-label: '[string]'
     x-anchor: string-schema
   stringMap:
     type:
-      - object
-      - string
+    - object
+    - string
     if:
       type: string
     then:

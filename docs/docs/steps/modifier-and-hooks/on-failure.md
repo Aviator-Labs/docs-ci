@@ -8,11 +8,9 @@ tags:
 # `on_failure` Step Hook
 
 
-???+ info "`on_failure`: [`step`](../index.md)"
-
-    A hook step to execute if the parent step fails.
-
-    This does not "recover" the failure - it will still fail even if the hook step succeeds.
+```concourse-schema
+def: on_failureModifier
+```
 
 ---
 

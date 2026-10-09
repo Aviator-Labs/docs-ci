@@ -1,0 +1,11 @@
+x-page: steps/modifier-and-hooks/on-abort.md
+$defs:
+  on_abortModifier:
+    x-step-modifier: true
+    properties:
+      on_abort:
+        $ref: '#/$defs/step'
+        description: A hook step to execute if the build is aborted and the parent step was running and
+          then terminated.
+    x-field-headings: false
+    x-open: true

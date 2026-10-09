@@ -1,0 +1,150 @@
+x-page: steps/task.md
+$defs:
+  taskFields:
+    x-step-key: task
+    oneOf:
+    - required:
+      - config
+    - required:
+      - file
+    properties:
+      task:
+        $ref: '#/$defs/identifier'
+        description: |-
+          The identifier value is just a name - short and sweet. The value is shown in the web UI but otherwise has no effect
+          on anything. This may change in the future; [RFC #32](https://github.com/concourse/rfcs/pull/32) proposes that the
+          name be used to reference a file within the project.
+      config:
+        $ref: '#/$defs/taskConfig'
+        description: The [task config](../tasks.md#task-config-schema) to execute.
+      file:
+        $ref: '#/$defs/file-path'
+        description: |-
+          A dynamic alternative to `task` step `config`.
+
+          `file` points at a `.yml` file containing the [task config](../tasks.md#task-config-schema), which allows this to be
+          tracked with your resources.
+
+          The first segment in the path should refer to another source from the plan, and the rest of the path is relative to
+          that source.
+
+          The content of the config file may contain template `((vars))`, which will be filled in using `task` step `vars` or
+          a configured [credential manager](../operation/creds/index.md).
+      image:
+        $ref: '#/$defs/identifier'
+        description: |-
+          Specifies an artifact source containing an image to use for the task. This overrides any
+          `task-config.image_resource` configuration present in the task configuration.
+
+          This is very useful when part of your pipeline involves building an image, possibly with dependencies pre-baked. You
+          can then propagate that image through the rest of your pipeline, guaranteeing that the correct version (and thus a
+          consistent set of dependencies) is used throughout your pipeline.
+      privileged:
+        $ref: '#/$defs/boolean'
+        description: |-
+          _Default `false`_. If set to `true`, the task will run with escalated capabilities available on the task's platform.
+
+          !!! warning
+
+              Setting `privileged: true` is a gaping security hole; use wisely and only if necessary. This is not part of the
+              task configuration in order to prevent privilege escalation via pull requests changing the task file.
+
+          For the `linux` platform, this determines whether the container will run in a separate user namespace. When set to
+          `true`, the container's `root` user is _actual_ `root`, i.e. not in a user namespace. This is not recommended, and
+          should _never_ be used with code you do not trust - e.g. pull requests.
+
+          For macOS and Windows this field has no effect since workloads on those machines are not containerized.
+      vars:
+        $ref: '#/$defs/vars'
+        description: |-
+          A map of template variables to pass to an external task. Not to be confused with `task` step `params`, which
+          provides _environment variables_ to the task.
+
+          This is to be used with external tasks defined in `task` step `file`.
+      params:
+        $ref: '#/$defs/env-vars'
+        description: |-
+          A map of task environment variable parameters to set, overriding those configured in the task's `config` or `file`.
+
+          The difference between `params` and `vars` is that `vars` allows you to interpolate any template variable in an
+          external task file, while `params` can be used to overwrite task parameters specifically. Also, `params` can have
+          default values declared in the task.
+      container_limits:
+        type:
+        - object
+        - string
+        if:
+          type: string
+        then:
+          $ref: '#/$defs/var'
+        else:
+          type: object
+          additionalProperties: false
+          properties:
+            cpu:
+              $ref: '#/$defs/number'
+              description: |-
+                The maximum amount of CPU available to the task container, measured in shares. 0 means unlimited.
+
+                CPU shares are relative to the CPU shares of other containers on a worker. For example, if you have two
+                containers both with a CPU limit of 2 shares then each container will get 50% of the CPU's time.
+
+                ```
+                Container A: 2 shares - 50% CPU
+                Container B: 2 shares - 50% CPU
+                Total CPU shares declared: 4
+                ```
+
+                If you introduce another container then the number of CPU time per container changes. CPU shares are relative to
+                each other.
+
+                ```
+                Container A: 2 shares - 25% CPU
+                Container B: 2 shares - 25% CPU
+                Container C: 4 shares - 50% CPU
+                Total CPU shares declared: 8
+                ```
+            memory:
+              description: The maximum amount of memory available to the task container, measured in bytes.
+                0 means unlimited.
+              anyOf:
+              - type: integer
+                minimum: 0
+              - type: string
+              x-type: '[`number`](config-basics.md#number-schema)'
+          x-type-label: container_limits
+        description: |-
+          CPU and memory limits to enforce on the task container.
+
+          Note that these values, when specified, will override any limits set by passing the `--default-task-cpu-limit` or
+          `--default-task-memory-limit` flags to the `concourse web` command.
+
+          These values will also override any configuration set on a [task's config
+          `container_limits`](../tasks.md#task-config-schema).
+        x-heading: false
+      hermetic:
+        $ref: '#/$defs/boolean'
+        description: |-
+          !!! warning
+
+              This setting is only supported by the `containerd` runtime on Linux. For other runtimes this setting has no
+              effect on container networking. Please contact your Concourse operator to find out what runtime your Concourse
+              cluster is using.
+
+          _Default `false`_. If set to `true`, the task will have no outbound network access. Your task will not be able to
+          reach the internet or any local network resources that aren't also inside the container.
+
+          For macOS and Windows this field has no effect since workloads on those machines are not containerized
+      input_mapping:
+        $ref: '#/$defs/stringMap'
+        description: |-
+          A map from task input names to concrete names in the build plan. This allows a task with generic input names to be
+          used multiple times in the same plan, mapping its inputs to specific resources within the plan.
+        x-type: '{ `input.name` : [`identifier`](config-basics.md#identifier-schema) }'
+      output_mapping:
+        $ref: '#/$defs/stringMap'
+        description: |-
+          A map from task output names to concrete names to register in the build plan. This allows a task with generic output
+          names to be used multiple times in the same plan.
+        x-type: '{ `output.name` : [`identifier`](config-basics.md#identifier-schema) }'
+    x-step-branch: true

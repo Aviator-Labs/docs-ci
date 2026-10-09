@@ -1,0 +1,75 @@
+x-page: steps/index.md
+$defs:
+  step:
+    type: object
+    oneOf:
+    - required:
+      - get
+    - required:
+      - put
+    - required:
+      - task
+    - required:
+      - set_pipeline
+    - required:
+      - load_var
+    - required:
+      - in_parallel
+    - required:
+      - aggregate
+    - required:
+      - do
+    - required:
+      - try
+    allOf:
+    - if:
+        required:
+        - get
+      then:
+        $ref: '#/$defs/getFields'
+    - if:
+        required:
+        - put
+      then:
+        $ref: '#/$defs/putFields'
+    - if:
+        required:
+        - task
+      then:
+        $ref: '#/$defs/taskFields'
+    - if:
+        required:
+        - set_pipeline
+      then:
+        $ref: '#/$defs/setPipelineFields'
+    - if:
+        required:
+        - load_var
+      then:
+        $ref: '#/$defs/loadVarFields'
+    - if:
+        required:
+        - in_parallel
+      then:
+        $ref: '#/$defs/inParallelFields'
+    - if:
+        required:
+        - aggregate
+      then:
+        $ref: '#/$defs/aggregateFields'
+    - if:
+        required:
+        - do
+      then:
+        $ref: '#/$defs/doFields'
+    - if:
+        required:
+        - try
+      then:
+        $ref: '#/$defs/tryFields'
+    $comment: Exactly one primary key selects the branch (if/then). The shared modifiers/hooks (timeout,
+      attempts, tags, ensure, on_*, across, fail_fast) are inlined into every branch so each branch can
+      use additionalProperties:false; this avoids unevaluatedProperties, whose failures mask the real
+      error in editors.
+    x-type-label: step
+    x-anchor: ''

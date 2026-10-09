@@ -3,8 +3,8 @@ $defs:
   job:
     type: object
     required:
-      - name
-      - plan
+    - name
+    - plan
     additionalProperties: false
     properties:
       name:

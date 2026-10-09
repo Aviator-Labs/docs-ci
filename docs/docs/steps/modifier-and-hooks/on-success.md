@@ -7,9 +7,9 @@ tags:
 
 # `on_success` Step Hook
 
-???+ info "`on_success`: [`step`](../index.md)"
-
-    A hook step to execute if the parent step succeeds.
+```concourse-schema
+def: on_successModifier
+```
 
 ---
 

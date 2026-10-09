@@ -1,0 +1,40 @@
+x-page: steps/load-var.md
+$defs:
+  loadVarFields:
+    x-step-key: load_var
+    required:
+    - file
+    properties:
+      load_var:
+        $ref: '#/$defs/identifier'
+        description: The identifier will be the name of var, available to subsequent steps as a [local
+          build var](../vars.md#local-var).
+      file:
+        $ref: '#/$defs/file-path'
+        description: The path to a file whose content shall be read and used as the var's value.
+      format:
+        enum:
+        - json
+        - yaml
+        - yml
+        - trim
+        - raw
+        description: |-
+          The format of the file's content.
+
+          If unset, Concourse will try to detect the format from the file extension. If the file format cannot be determined,
+          Concourse will fallback to `trim`.
+
+          If set to `json`, `yaml`, or `yml`, the file content will be parsed accordingly and the resulting structure will be
+          the value of the var.
+
+          If set to `trim`, the var will be set to the content of the file with any trailing and leading whitespace removed.
+
+          If set to `raw`, the var will be set to the content of the file without modification (i.e. with any existing
+          whitespace).
+      reveal:
+        $ref: '#/$defs/boolean'
+        description: |-
+          _Default `false`_. If set to `true`, allow the var's content to be printed in the build output even with secret
+          redaction enabled.
+    x-step-branch: true

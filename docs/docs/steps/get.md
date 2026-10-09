@@ -14,7 +14,7 @@ below for more details and examples.
 ## `get` schema
 
 ```concourse-schema
---8<-- "docs/assets/schema/get.schema.yml"
+def: getFields
 ```
 
 ---

@@ -1,0 +1,16 @@
+x-page: steps/do.md
+$defs:
+  doFields:
+    x-step-key: do
+    properties:
+      do:
+        type: array
+        items:
+          $ref: '#/$defs/step'
+        description: |-
+          Performs the given steps serially, with the same semantics as if they were at the top level step listing. Most commonly
+          used with [`try` step](try.md), [across-step](modifier-and-hooks/across.md),
+          and [step-hooks](modifier-and-hooks/index.md).
+    x-step-branch: true
+    x-field-headings: false
+    x-open: true

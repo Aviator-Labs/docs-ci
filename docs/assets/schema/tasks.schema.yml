@@ -1,0 +1,291 @@
+x-page: tasks.md
+$defs:
+  taskConfig:
+    type:
+    - object
+    - string
+    if:
+      type: string
+    then:
+      $ref: '#/$defs/var'
+    else:
+      type: object
+      required:
+      - platform
+      additionalProperties: false
+      properties:
+        platform:
+          description: |-
+            The platform the task should run on. This determines the pool of workers that the task can run against.
+
+            Technically any string value is allowed so long as a worker advertises the same platform, but in practice only
+            `linux`, `darwin`, and `windows` are in use.
+          anyOf:
+          - enum:
+            - linux
+            - darwin
+            - windows
+          - type: string
+          x-type: '`linux` | `darwin` | `windows`'
+        image_resource:
+          type: object
+          required:
+          - type
+          additionalProperties: false
+          properties:
+            type:
+              $ref: '#/$defs/identifier'
+              description: |-
+                The type of the resource. Usually `registry-image`.
+
+                You can use any resource type that returns a filesystem in the correct format: a `/rootfs` directory containing
+                a full filesystem, and a `metadata.json` file containing.
+              x-required-text: false
+              x-type: '[`resource_type.name`](resource-types/index.md#resource_type-schema)'
+            source:
+              $ref: '#/$defs/config'
+              description: The configuration for the resource; see [`resource.source`](resources/index.md#resource-schema).
+              x-doc-required: true
+              x-required-text: false
+            params:
+              $ref: '#/$defs/config'
+              description: |-
+                A map of arbitrary configuration to forward to the resource. Refer to the resource type's documentation to see
+                what it supports.
+            version:
+              $ref: '#/$defs/version'
+              description: |-
+                A specific version of the resource to fetch. This should be a map with string keys and values. If not specified,
+                the latest version will be fetched.
+          description: |-
+            The container image to run with, as provided by an anonymous [resource](resources/index.md) definition.
+
+            Whenever the task runs, the anonymous resource will be `check`ed to discover the latest version available. The image
+            will then be fetched onto the worker, if necessary, just prior to running the task.
+
+            To use an image provided by a previous step within your build plan, set `task` step `image` on the
+            [`task` step](steps/task.md) instead.
+
+            !!! note
+
+                This field is only required for tasks targeting the Linux platform. This field will be ignored for Windows and
+                Darwin workers. Windows containers are currently not supported and Darwin does not have native containers. The
+                task will run inside a clean temporary directory on the Windows/Darwin worker with any inputs and outputs copied
+                into the same directory. Any dependencies should be pre-installed on the worker.
+          x-type-label: anonymous_resource
+        inputs:
+          type: array
+          items:
+            type: object
+            required:
+            - name
+            additionalProperties: false
+            properties:
+              name:
+                $ref: '#/$defs/identifier'
+                description: The name of the input.
+                x-required-text: false
+              path:
+                $ref: '#/$defs/dir-path'
+                description: |-
+                  The path where the input will be placed. If not specified, the input's `name` is used.
+
+                  Paths are relative to the working directory of the task unless an absolute path is given. An absolute path is
+                  any path that starts with a forward slash `/`. We recommend only using relative paths unless you have a strong
+                  technical reason to use absolute paths.
+
+                  Any parent directory references (`../`) in the path will be removed.
+              optional:
+                $ref: '#/$defs/boolean'
+                description: |-
+                  _Default `false`_. If `true`, then the input is not required by the task. The task may run even if this input is
+                  missing.
+
+                  An `optional` input that is missing will not appear in the current directory of the running task.
+            x-type-label: input
+          description: |-
+            The set of artifacts used by task, determining which artifacts will be available in the current directory when the
+            task runs.
+
+            These are satisfied by [`get` steps](steps/get.md) or `task-config.outputs` of a previous task. These can also be
+            provided by `-i` with [`fly execute`](#running-tasks-with-fly-execute).
+
+            If any required inputs are missing at run-time, then the task will error immediately.
+        outputs:
+          type: array
+          items:
+            type: object
+            required:
+            - name
+            additionalProperties: false
+            properties:
+              name:
+                $ref: '#/$defs/identifier'
+                description: |-
+                  The name of the output. The contents under `path` will be made available to the rest of the plan under this
+                  name.
+                x-required-text: false
+              path:
+                $ref: '#/$defs/dir-path'
+                description: |-
+                  The path to a directory where the output will be taken from. If not specified, the output's `name` is used.
+
+                  Paths are relative to the working directory of the task unless an absolute path is given. An absolute path is
+                  any path that starts with a forward slash `/`. We recommend only using relative paths unless you have a strong
+                  technical reason to use absolute paths.
+
+                  Any parent directory references (`../`) in the path will be removed.
+            x-type-label: output
+          description: |-
+            The artifacts produced by the task.
+
+            Each output configures a directory to make available to later steps in the [build plan](steps/index.md). The
+            directory will be automatically created before the task runs, and the task should place any artifacts it wants to
+            export in the directory.
+        caches:
+          type: array
+          items:
+            type: object
+            required:
+            - path
+            additionalProperties: false
+            properties:
+              path:
+                $ref: '#/$defs/dir-path'
+                description: |-
+                  The path to a directory to be cached.
+
+                  Paths are relative to the working directory of the task. Absolute paths
+                  can be specified and are respected.
+                x-required-text: false
+            x-type-label: cache
+          description: |-
+            The cached directories shared between task runs.
+
+            On the task's first run, all cache directories will be empty. It is the responsibility of the task to populate these
+            directories with any artifacts to be cached. On subsequent runs, the cached directories will contain those
+            artifacts.
+
+            Caches are scoped to the worker the task is run on, so you will not get a cache hit when subsequent builds run on
+            different workers. This also means that caching is not intended to share state between workers, and your task should
+            be able to run whether or not the cache is warmed.
+
+            Caches are also scoped to a particular task name inside of a pipeline's job. As a consequence, if the job name, step
+            name or cache path are changed, the cache will not be used. This also means that caches do not exist for one-off
+            builds.
+        params:
+          $ref: '#/$defs/env-vars'
+          description: |-
+            A key-value mapping of string keys and values that are exposed to the task via environment variables.
+
+            Pipelines can override these params by setting [`task` step `params`](steps/task.md) on the `task` step. This is a
+            common method of providing credentials to a task.
+        run:
+          $comment: Optional on v8+ (falls back to image ENTRYPOINT/CMD); required on older servers.
+          type: object
+          additionalProperties: false
+          properties:
+            path:
+              $ref: '#/$defs/string'
+              description: |-
+                The name of or path to the executable to run found inside the container.
+
+                `path` is relative to the working directory. If `dir` is specified to set the working directory, then `path` is
+                relative to it.
+
+                This is commonly a path to a script provided by one of the task's inputs, e.g. `my-resource/scripts/test`. It
+                could also be a command like `bash` (respecting standard `$PATH` lookup rules), or an absolute path to a file to
+                execute, e.g. `/bin/bash`.
+              x-type: '[`file-path`](config-basics.md#file-path-schema)'
+            args:
+              $ref: '#/$defs/stringList'
+              description: |-
+                Arguments to pass to the command. Note that when executed with `fly`, any arguments passed to
+                [`fly execute`](#running-tasks-with-fly-execute) are appended to this array.
+            dir:
+              $ref: '#/$defs/dir-path'
+              description: A directory, relative to the initial working directory, to set as the working
+                directory when running the script.
+            user:
+              $ref: '#/$defs/string'
+              description: |-
+                Explicitly set the user to run as. If not specified, this defaults to
+                the user configured by the task's image. If not specified it defaults
+                to `root` on Linux. On Windows and macOS this setting is ignored and
+                tasks run as the same user as the `concourse worker` process.
+          description: |-
+            The command to execute in the container. If not specified, Concourse will
+            try running any `ENTRYPOINT`/`CMD` commands found in the container,
+            following the same logic as Docker. Any `args` specified in the task config
+            will be appended to `ENTRYPOINT`/`CMD`.
+
+            ??? warning "`ENTRYPOINT`/`CMD` execution is only supported on >= v8 of Concourse."
+
+                If you're on an older version of Concourse you must specify `run.path` in your task config.
+
+            !!! note
+
+                This is not provided as a script blob, but explicit `path` and `args` values; this allows `fly` to forward
+                arguments to the script, and forces your config `.yml` to stay fairly small.
+          x-type-label: command
+        rootfs_uri:
+          $ref: '#/$defs/string'
+          description: |-
+            A string specifying the rootfs uri of the container, as interpreted by your worker's Garden backend.
+
+            `task-config.image_resource` is the preferred way to specify base image. You should only use this if you have no
+            other option and you really know what you're doing.
+        container_limits:
+          type:
+          - object
+          - string
+          if:
+            type: string
+          then:
+            $ref: '#/$defs/var'
+          else:
+            type: object
+            additionalProperties: false
+            properties:
+              cpu:
+                $ref: '#/$defs/number'
+                description: |-
+                  The maximum amount of CPU available to the task container, measured in shares. 0 means unlimited.
+
+                  CPU shares are relative to the CPU shares of other containers on a worker. For example, if you have two
+                  containers both with a CPU limit of 2 shares then each container will get 50% of the CPU's time.
+
+                  ```text
+                  Container A: 2 shares - 50% CPU
+                  Container B: 2 shares - 50% CPU
+                  Total CPU shares declared: 4
+                  ```
+
+                  If you introduce another container then the number of CPU time per container changes. CPU shares are
+                  relative to each other.
+
+                  ```text
+                  Container A: 2 shares - 25% CPU
+                  Container B: 2 shares - 25% CPU
+                  Container C: 4 shares - 50% CPU
+                  Total CPU shares declared: 8
+                  ```
+              memory:
+                description: |-
+                  The maximum amount of memory available to the task container, measured in bytes. 0 means unlimited. Can use
+                  units such as `KB/MB/GB`.
+                anyOf:
+                - type: integer
+                  minimum: 0
+                - type: string
+                x-type: '[`number`](config-basics.md#number-schema)'
+            x-type-label: container_limits
+          description: |-
+            CPU and memory limits to enforce on the task container.
+
+            !!! note
+
+                These values, when specified, will override any limits set by passing the `--default-task-cpu-limit` or
+                `--default-task-memory-limit` flags to the `concourse web` command.
+    x-type-label: task-config
+    x-field-headings: false

@@ -13,7 +13,7 @@ A pipeline's jobs are listed under [`pipeline.jobs`](pipelines/index.md#pipeline
 ## `job` schema
 
 ```concourse-schema
---8<-- "docs/assets/schema/jobs.schema.yml"
+def: job
 ```
 
 ---

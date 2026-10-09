@@ -1,0 +1,51 @@
+x-page: steps/in-parallel.md
+$defs:
+  inParallelFields:
+    x-step-key: in_parallel
+    properties:
+      in_parallel:
+        anyOf:
+        - type: array
+          items:
+            $ref: '#/$defs/step'
+        - $ref: '#/$defs/inParallelConfig'
+        description: Steps are either configured as a array or within an [`in_parallel_config` schema](#in_parallel_config-schema).
+    x-step-branch: true
+    x-field-headings: false
+  aggregateFields:
+    x-step-key: aggregate
+    $comment: Deprecated predecessor of in_parallel. Not in the 8.3 docs; kept so older pipelines don't
+      false-positive. Verify against a real 8.3 web node.
+    properties:
+      aggregate:
+        type: array
+        items:
+          $ref: '#/$defs/step'
+        deprecated: true
+    x-step-branch: true
+    x-docs: false
+  inParallelConfig:
+    type: object
+    required:
+    - steps
+    additionalProperties: false
+    properties:
+      steps:
+        type: array
+        items:
+          $ref: '#/$defs/step'
+        description: The steps to perform in parallel.
+      limit:
+        $ref: '#/$defs/number'
+        description: |-
+          _Default unlimited_. A semaphore which limits the parallelism when executing the steps in an `in_parallel` step.
+          When set, the number of running steps will not exceed the limit.
+
+          When not specified, `in_parallel` will execute all steps immediately.
+      fail_fast:
+        $ref: '#/$defs/boolean'
+        description: |-
+          _Default `false`_. When enabled, the parallel step will fail fast by returning as soon as any sub-step fails. This
+          means that running steps will be interrupted and pending steps will no longer be scheduled.
+    x-type-label: in_parallel_config
+    x-field-headings: false

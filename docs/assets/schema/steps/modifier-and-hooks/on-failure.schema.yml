@@ -1,0 +1,13 @@
+x-page: steps/modifier-and-hooks/on-failure.md
+$defs:
+  on_failureModifier:
+    x-step-modifier: true
+    properties:
+      on_failure:
+        $ref: '#/$defs/step'
+        description: |-
+          A hook step to execute if the parent step fails.
+
+          This does not "recover" the failure - it will still fail even if the hook step succeeds.
+    x-field-headings: false
+    x-open: true

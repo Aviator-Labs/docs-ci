@@ -1,0 +1,10 @@
+x-page: steps/modifier-and-hooks/on-success.md
+$defs:
+  on_successModifier:
+    x-step-modifier: true
+    properties:
+      on_success:
+        $ref: '#/$defs/step'
+        description: A hook step to execute if the parent step succeeds.
+    x-field-headings: false
+    x-open: true
